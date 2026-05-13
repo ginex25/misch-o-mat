@@ -12,3 +12,8 @@ ENDSTOP_PIN = 12
 
 # Button
 BUTTON_PIN = 26
+
+# scale
+DOUT_PIN = 23
+PD_SCK_PIN = 24
+GAIN_CHANNEL_A = 64

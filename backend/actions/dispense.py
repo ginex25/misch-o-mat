@@ -1,10 +1,14 @@
 import json
 import os
+
+from actions.reset import reset
+from core.logger import setup_logger
 from hardware.stepper import move_to_hole, home_stepper
 from hardware.bridge import drive_up, drive_away
 from hardware.pump import pump_off, pump_on
 from hardware.scale import scale, tare
 
+log = setup_logger()
 
 def load_liquids_database(file_path="/home/misch-o-mat/misch-o-mat/backend/database/liquids.json"):
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -35,8 +39,9 @@ def dispense_drink(ingredients):
             start_position = target_position
 
     except Exception as e:
-        print(f"Error during dispensing: {str(e)}")
+        log.exception("Error during dispensing")
+        reset()
         raise e
 
     home_stepper()
-    print("Dispensing finished")
+    log.info("Dispensing finished")

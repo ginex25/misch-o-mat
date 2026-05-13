@@ -1,6 +1,7 @@
 import os
 import threading
 import time
+
 try:
     import RPi.GPIO as GPIO
 except RuntimeError:
@@ -31,6 +32,7 @@ def button_listener():
             clean_gpio()
         time.sleep(2)
         setup_gpio()
+
 
 @app.route('/')
 def serve_react_app():
@@ -145,7 +147,7 @@ def get_data(filename):
                         break
 
                 if str(ingredient_id) not in liquids_data or liquids_data[str(ingredient_id)][
-                        'fuellstand_ml'] < amount or liquids_data[str(ingredient_id)]['anschlussplatz'] == 0:
+                    'fuellstand_ml'] < amount or liquids_data[str(ingredient_id)]['anschlussplatz'] == 0:
                     available = False
                     break
             if available:
@@ -198,35 +200,34 @@ def preparation():
             ing_id_str = str(ingredient_id)
 
             if ing_id_str not in liquids_data:
-                print(f"Warnung: Zutat {ing_id_str} existiert nicht in liquids.json")
+                log.warning(f"Ingredient ID {ing_id_str} not found in liquids for drink '{drink_name}'")
                 continue
-            
+
             if filename == "mixdrinks.json":
                 is_alcohol = liquids_data[ing_id_str].get('alkohol', False)
-                
+
                 if not is_alcohol:
                     amount = (percentage + 5) / 100 * drink_ml if strength == "mittel" else (
-                        percentage + 10) / 100 * drink_ml if strength == "schwach" else percentage / 100 * drink_ml
+                                                                                                    percentage + 10) / 100 * drink_ml if strength == "schwach" else percentage / 100 * drink_ml
                 else:
                     amount = (percentage - 10) / 100 * drink_ml if strength == "schwach" else (
-                        percentage - 5) / 100 * drink_ml if strength == "mittel" else percentage / 100 * drink_ml
+                                                                                                      percentage - 5) / 100 * drink_ml if strength == "mittel" else percentage / 100 * drink_ml
             else:
                 amount = percentage / 100 * drink_ml
-            
+
             liquids_data[ing_id_str]['fuellstand_ml'] -= amount
             ingredients[ingredient_id] = amount
 
         with open(liquids_filepath, 'w') as liquids_file:
             json.dump(liquids_data, liquids_file, indent=4, sort_keys=False)
-        
+
         try:
             dispense_drink(ingredients)
         except Exception as e:
-            log.exception("Error during drink dispensing")
             return jsonify({"error": f"Dispensing failed: {str(e)}"}), 500
 
         return '', 204
-    
+
     except Exception as e:
         log.exception("Critical error in /preparation endpoint")
         return jsonify({"error": str(e)}), 500
@@ -284,7 +285,7 @@ def update_value(file_name):
             update_gesamtmenge(mixdrinks_path, category, value)
 
             return jsonify({"message": "gesamtmenge_ml updated successfully in 'longdrinks.json' and 'mixdrinks.json'"
-                           }), 200
+                            }), 200
 
         else:
             log.warning(f"Invalid file_name '{file_name}' in /update request")

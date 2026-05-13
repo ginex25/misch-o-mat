@@ -4,6 +4,7 @@ import WineBarIcon from "@mui/icons-material/WineBar";
 import SportsBarIcon from "@mui/icons-material/SportsBar";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
+import {useSnackbar} from "../components/Snackbar.jsx";
 
 export default function Preparation() {
   const [icons, setIcons] = useState([]);
@@ -11,6 +12,7 @@ export default function Preparation() {
   const location = useLocation();
   const { drink, drinks, category, random, strength, route } = location.state;
   const hasPrepared = useRef(false);
+  const { showError } = useSnackbar();
 
   useEffect(() => {
     const allIcons = [
@@ -66,6 +68,7 @@ export default function Preparation() {
         });
       } catch (err) {
         console.error("Error during preparation:", err);
+        showError("Getränk konnte nicht zubereitet werden");
         navigate("/");
       }
     }

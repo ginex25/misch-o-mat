@@ -6,12 +6,12 @@ except RuntimeError:
     import mocks.gpio as GPIO
 
 import time
-
 from config.pins import LIN1, LIN2
 
 pause_duration = 0.3
 
 log = setup_logger()
+
 
 def drive_up():
     try:

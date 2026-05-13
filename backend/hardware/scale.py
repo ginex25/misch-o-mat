@@ -1,5 +1,9 @@
 import json
 import os
+
+from config.pins import DOUT_PIN, PD_SCK_PIN, GAIN_CHANNEL_A
+from core.logger import setup_logger
+
 try:
     from hx711 import HX711
 except (RuntimeError, ImportError):
@@ -10,6 +14,8 @@ except RuntimeError:
     import mocks.gpio as GPIO
 import time
 
+log = setup_logger()
+
 GPIO.setmode(GPIO.BCM)
 
 config_path = os.path.join(os.path.dirname(__file__), '../config/scale.json')
@@ -17,16 +23,18 @@ with open(config_path, 'r') as config_file:
     config = json.load(config_file)
     ratio = config["RATIO"]
 
-hx = HX711(dout_pin=23, pd_sck_pin=24, gain_channel_A=64)
+hx = HX711(dout_pin=DOUT_PIN, pd_sck_pin=PD_SCK_PIN, gain_channel_A=GAIN_CHANNEL_A)
 hx.zero(1)
 hx.set_scale_ratio(ratio)
 
 
 def setup_scale():
     GPIO.setmode(GPIO.BCM)
-    hx = HX711(dout_pin=23, pd_sck_pin=24, gain_channel_A=64)
+    global hx
+    hx = HX711(dout_pin=DOUT_PIN, pd_sck_pin=PD_SCK_PIN, gain_channel_A=GAIN_CHANNEL_A)
     hx.zero(1)
-    hx.set_scale_ratio(ratio) 
+    hx.set_scale_ratio(ratio)
+
 
 def tare():
     setup_scale()
@@ -44,24 +52,20 @@ def calibrate(known_weight):
         json.dump(config, config_file)
 
 
-def scale(target_weight, trailing):
+def scale(target_weight, trailing, threshold=2):
     setup_scale()
     weight = 0
     previous_weight = 0
     max_increase = 100
-    print("Scaling for " + str(target_weight) + "g")
-    start_time = time.time()
+    log.info(f"Starting scaling operation for target weight: {target_weight}g")
     false_count = 0
 
+    last_check_time = time.time()
+    last_check_weight = 0
+
     while weight < target_weight:
-        elapsed_time = time.time() - start_time
-
-        if elapsed_time >= 20:
-            raise TimeoutError("Scaling operation timed out after 10 seconds")
-
         current_weight = hx.get_weight_mean(1)
-        current_weight = current_weight
-        
+
         if current_weight is False:
             false_count += 1
             if false_count >= 5:
@@ -69,13 +73,20 @@ def scale(target_weight, trailing):
             continue
 
         false_count = 0
-        
+
+        elapsed_since_check = time.time() - last_check_time
+        if elapsed_since_check >= 2:
+            if (current_weight - last_check_weight) < threshold:
+                raise TimeoutError(f"Scale stalled: weight increased by less than {threshold}g in 2 seconds")
+            last_check_time = time.time()
+            last_check_weight = current_weight
+
         if not trailing:
             if abs(current_weight - previous_weight) <= max_increase:
                 weight = current_weight
                 previous_weight = weight
-                print(weight)
+                log.debug(f"Current weight: {weight}g")
         else:
             weight = current_weight
             previous_weight = weight
-            print(weight)
+            log.debug(f"Current weight: {weight}g")
