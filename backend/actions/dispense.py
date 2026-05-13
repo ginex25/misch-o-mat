@@ -10,7 +10,7 @@ def load_liquids_database(file_path="/home/misch-o-mat/misch-o-mat/backend/datab
     current_dir = os.path.dirname(os.path.abspath(__file__))
     backend_dir = os.path.dirname(current_dir)
     file_path = os.path.join(backend_dir, "database", "liquids.json")
-    
+
     with open(file_path, "r") as file:
         return json.load(file)
 
@@ -35,8 +35,8 @@ def dispense_drink(ingredients):
             start_position = target_position
 
     except Exception as e:
-	    print(f"Error during dispensing: {str(e)}")
-	    raise e
+        print(f"Error during dispensing: {str(e)}")
+        raise e
 
     home_stepper()
     print("Dispensing finished")

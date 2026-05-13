@@ -1,19 +1,22 @@
 import os
-import logging
 import threading
 import time
-import RPi.GPIO as GPIO
+try:
+    import RPi.GPIO as GPIO
+except RuntimeError:
+    import mocks.gpio as GPIO
 from flask import Flask, json, jsonify, request, send_from_directory
 from flask_cors import CORS
 from json import JSONDecodeError
 from actions.dispense import dispense_drink
 from actions.reset import reset
 from actions.clean import clean_position
-from config.setup import clean_gpio, setup_gpio, BUTTON_PIN
-from hardware.scale import tare, calibrate, setup_scale
+from hardware.setup import clean_gpio, setup_gpio
+from config.pins import BUTTON_PIN
+from hardware.scale import tare, calibrate
+from core.logger import setup_logger
 
-log = logging.getLogger('werkzeug')
-log.setLevel(logging.ERROR)
+log = setup_logger()
 
 app = Flask(__name__, static_folder="../frontend/dist", static_url_path="/")
 CORS(app, origins="*")
@@ -23,12 +26,11 @@ JSON_FOLDER = "database"
 def button_listener():
     while True:
         if GPIO.input(BUTTON_PIN) == GPIO.LOW:
-            print("Emergency Button pressed")
+            log.info("Emergency Button pressed")
             reset()
             clean_gpio()
         time.sleep(2)
         setup_gpio()
-
 
 @app.route('/')
 def serve_react_app():
@@ -41,6 +43,7 @@ def tare_scale():
         tare()
         return jsonify({"message": "Scale tared"}), 200
     except Exception as e:
+        log.exception("Error while taring scale")
         return jsonify({"error": f"Error while taring scale: {str(e)}"}), 500
 
 
@@ -50,6 +53,7 @@ def reset_hardware():
         reset()
         return jsonify({"message": "Hardware successfully reset"}), 200
     except Exception as e:
+        log.exception("Error while resetting hardware")
         return jsonify({"error": f"Error while resetting hardware: {str(e)}"}), 500
 
 
@@ -58,12 +62,14 @@ def clean():
     try:
         data = request.get_json()
         if 'position' not in data:
+            log.exception("Missing 'position' parameter in /clean request")
             return jsonify({"error": "Missing required parameter"}), 400
 
         position = data['position']
         clean_position(position)
         return jsonify({"message": "Successfully cleaned"}), 200
     except Exception as e:
+        log.exception("Error while cleaning position")
         return jsonify({"error": f"Error while cleaning: {str(e)}"}), 500
 
 
@@ -73,6 +79,7 @@ def calibrate():
         calibrate(100)
         return jsonify({"message": "Successfully calibrated"}), 200
     except Exception as e:
+        log.exception("Error while calibrating scale")
         return jsonify({"error": f"Error while calibrating: {str(e)}"}), 500
 
 
@@ -83,6 +90,7 @@ def shutdown():
         os.system("sudo shutdown now")
         return jsonify({"message": "Raspberry Pi will be shut down"}), 200
     except Exception as e:
+        log.exception("Error while shutting down Raspberry Pi")
         return jsonify({"error": f"Error while shutting down: {str(e)}"}), 500
 
 
@@ -98,6 +106,7 @@ def get_liquids():
             liquids_data = json.load(liquids_file)
         return jsonify(liquids_data)
     except JSONDecodeError:
+        log.error("Invalid JSON format in liquids.json")
         return {"error": "Invalid JSON format"}, 400
 
 
@@ -107,6 +116,7 @@ def get_data(filename):
     liquids_filepath = os.path.join(JSON_FOLDER, 'liquids.json')
 
     if not os.path.isfile(filepath) or not os.path.isfile(liquids_filepath):
+        log.error("Drinks or liquids file not found in /drinks endpoint")
         return {"error": "File not found"}, 404
 
     try:
@@ -143,6 +153,7 @@ def get_data(filename):
 
         return jsonify(available_drinks, overall_drink_ml)
     except JSONDecodeError:
+        log.exception("Invalid JSON format in drinks or liquids file")
         return {"error": "Invalid JSON format"}, 400
 
 
@@ -161,6 +172,7 @@ def preparation():
     liquids_filepath = os.path.join(JSON_FOLDER, 'liquids.json')
 
     if not os.path.isfile(drinks_filepath) or not os.path.isfile(liquids_filepath):
+        log.error("Drinks or liquids file not found in /preparation endpoint")
         return jsonify({"error": "File not found"}), 404
 
     try:
@@ -210,12 +222,13 @@ def preparation():
         try:
             dispense_drink(ingredients)
         except Exception as e:
+            log.exception("Error during drink dispensing")
             return jsonify({"error": f"Dispensing failed: {str(e)}"}), 500
 
         return '', 204
     
     except Exception as e:
-        print(f"Kritischer Fehler in /preparation: {str(e)}")
+        log.exception("Critical error in /preparation endpoint")
         return jsonify({"error": str(e)}), 500
 
 
@@ -224,6 +237,7 @@ def update_value(file_name):
     try:
         data = request.get_json()
         if 'value' not in data or 'index' not in data or 'category' not in data:
+            log.warning("Missing required parameters in /update request")
             return jsonify({"error": "Missing required parameters: 'index', 'category', 'value'"}), 400
 
         value = data['value']
@@ -240,7 +254,7 @@ def update_value(file_name):
 
             with open(filepath, 'w') as file:
                 json.dump(json_data, file, indent=4, sort_keys=False)
-
+            log.debug(f"Updated '{category}' for liquid at index {index} to {value}")
             return jsonify({"message": f"'{category}' updated successfully at index {index}"}), 200
 
         elif file_name == "longdrinks":
@@ -263,6 +277,7 @@ def update_value(file_name):
                 except JSONDecodeError:
                     return {"error": "Invalid JSON format"}, 400
                 except Exception as e:
+                    log.exception("Error while updating gesamtmenge_ml in drinks file")
                     return {"error": str(e)}, 500
 
             update_gesamtmenge(longdrinks_path, category, value)
@@ -272,11 +287,14 @@ def update_value(file_name):
                            }), 200
 
         else:
+            log.warning(f"Invalid file_name '{file_name}' in /update request")
             return jsonify({"error": f"Invalid file_name '{file_name}'"}), 400
 
     except JSONDecodeError:
+        log.exception("Error while updating values in /update request")
         return jsonify({"error": "Invalid JSON format in file"}), 400
     except Exception as e:
+        log.exception("Error while updating values in /update request")
         return jsonify({"error": str(e)}), 500
 
 

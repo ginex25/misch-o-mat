@@ -1,7 +1,13 @@
 import json
 import os
-from hx711 import HX711
-import RPi.GPIO as GPIO
+try:
+    from hx711 import HX711
+except (RuntimeError, ImportError):
+    from mocks.hardware.scale import HX711
+try:
+    import RPi.GPIO as GPIO
+except RuntimeError:
+    import mocks.gpio as GPIO
 import time
 
 GPIO.setmode(GPIO.BCM)

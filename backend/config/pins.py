@@ -1,0 +1,14 @@
+PUMP_PIN = 16
+
+# Bridge
+LIN1 = 20
+LIN2 = 21
+
+# Stepper
+DIR_PIN = 7
+STEP_PIN = 8
+ENABLE_PIN = 25
+ENDSTOP_PIN = 12
+
+# Button
+BUTTON_PIN = 26

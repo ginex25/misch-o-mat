@@ -1,11 +1,17 @@
-import RPi.GPIO as GPIO
+from core.logger import setup_logger
+
+try:
+    import RPi.GPIO as GPIO
+except RuntimeError:
+    import mocks.gpio as GPIO
+
 import time
 
-LIN1 = 20
-LIN2 = 21
+from config.pins import LIN1, LIN2
 
 pause_duration = 0.3
 
+log = setup_logger()
 
 def drive_up():
     try:
@@ -14,9 +20,9 @@ def drive_up():
         time.sleep(pause_duration)
         GPIO.output(LIN1, GPIO.LOW)
         GPIO.output(LIN2, GPIO.LOW)
-        print("Drive up")
-    except Exception as e:
-        print(f"Error during driving up: {str(e)}")
+        log.info("Bridge driven up")
+    except Exception:
+        log.exception("Error during driving up")
 
 
 def drive_away():
@@ -26,6 +32,6 @@ def drive_away():
         time.sleep(pause_duration)
         GPIO.output(LIN1, GPIO.LOW)
         GPIO.output(LIN2, GPIO.LOW)
-        print("Drive away")
-    except Exception as e:
-        print(f"Error during driving away: {str(e)}")
+        log.info("Bridge driven away")
+    except Exception:
+        log.exception("Error during driving away")
