@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import {useSnackbar} from "./Snackbar.jsx";
 
 function Hero() {
   const [strength, setStrength] = useState("mittel");
@@ -15,6 +16,7 @@ function Hero() {
   });
 
   const scrollDivRef = useRef(null);
+  const { showError } = useSnackbar();
 
   const toggleRandom = useCallback(() => {
     setRandom((prevRandom) => !prevRandom);
@@ -53,6 +55,7 @@ function Hero() {
           }, 1000);
         }, 1000);
       } catch (err) {
+        showError("Getränke konnten nicht geladen werden");
         console.error(err);
         setLoading(false);
       }

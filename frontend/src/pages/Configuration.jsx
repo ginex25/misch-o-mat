@@ -61,8 +61,8 @@ function Configuration() {
   };
 
   return (
-    <div className="pt-4 font-sans">
-      <div className="flex items-center mb-2">
+      <div className="pt-4 font-sans flex flex-col h-[100dvh]">
+       <div className="flex items-center mb-2 flex-shrink-0">
         <NavLink to="/settings">
           <ArrowBackIcon
             className="active:scale-95 transition-all duration-100"
@@ -73,7 +73,7 @@ function Configuration() {
 
       {/* Lade-Indikator wird nur für den Inhalt angezeigt */}
       {loading ? (
-        <div className="flex items-center justify-center h-[365px]">
+        <div className="flex items-center justify-center flex-grow">
           <div className="flex space-x-[5px]">
             <span className="h-3 w-3 bg-white rounded-full opacity-0 animate-[fadeInOut_1.5s_infinite]"></span>
             <span className="h-3 w-3 bg-white rounded-full opacity-0 animate-[fadeInOut_1.5s_infinite_0.2s]"></span>
@@ -83,7 +83,7 @@ function Configuration() {
       ) : (
         // Der Inhalt wird nur angezeigt, wenn loading false ist
         <div
-          className="overflow-y-auto h-[410px] scrollbar-hide"
+          className="overflow-y-auto flex-grow scrollbar-hide"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           <div className="flex items-center justify-between">
