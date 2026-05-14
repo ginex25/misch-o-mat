@@ -90,3 +90,39 @@ def scale(target_weight, trailing, threshold=2):
             weight = current_weight
             previous_weight = weight
             log.debug(f"Current weight: {weight}g")
+
+
+def wait_for_weight_increase(timeout: float = 3.0, threshold: float = 2.0, baseline: float | None = None,
+                             poll_interval: float = 0.1) -> tuple[bool, float]:
+    try:
+        setup_scale()
+
+        if baseline is None:
+            baseline = hx.get_weight_mean(1)
+
+        if baseline is False:
+            baseline = 0
+
+        start = time.time()
+        last_weight = baseline
+
+        while (time.time() - start) < timeout:
+            w = hx.get_weight_mean(1)
+
+            if w is False:
+                time.sleep(poll_interval)
+                continue
+
+            log.debug(f"Current weight: {w}g")
+
+            if (w - baseline) > threshold:
+                return True, w
+
+            last_weight = w
+
+            time.sleep(poll_interval)
+
+        return False, last_weight
+    except Exception:
+        log.exception("Error in wait_for_weight_increase")
+        return False, baseline or 0.0

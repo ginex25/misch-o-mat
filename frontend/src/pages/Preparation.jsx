@@ -54,7 +54,7 @@ export default function Preparation() {
       }
 
       try {
-        await axios.post("/preparation", {
+        await axios.post("/api/preparation", {
           drink: drink.name,
           strength: strength,
           category: category,

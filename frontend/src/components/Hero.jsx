@@ -36,14 +36,14 @@ function Hero() {
       try {
         setLoading(true);
         if (drinksCache.current["Mischgetränke"].length === 0) {
-          const response = await axios.get(`/drinks/mixdrinks`);
+          const response = await axios.get(`/api/drinks/mixdrinks`);
           drinksCache.current["Mischgetränke"] = Object.values(
             response.data[0],
           );
         }
 
         if (drinksCache.current["Longdrinks"].length === 0) {
-          const response_2 = await axios.get(`/drinks/longdrinks`);
+          const response_2 = await axios.get(`/api/drinks/longdrinks`);
           drinksCache.current["Longdrinks"] = Object.values(response_2.data[0]);
         }
         setDrinks(drinksCache.current[category]);

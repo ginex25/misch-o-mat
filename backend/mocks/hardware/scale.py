@@ -17,6 +17,6 @@ class HX711:
         return 50000.0 + random.uniform(-100, 100)
 
     def get_weight_mean(self, readings: int = 30) -> float:
-        # self._current_weight += random.uniform(2, 8)
-        self._current_weight = 1
+        self._current_weight += random.uniform(2, 8)
+        # self._current_weight = 1
         return round(self._current_weight, 1)

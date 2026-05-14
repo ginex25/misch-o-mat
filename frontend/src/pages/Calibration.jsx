@@ -12,7 +12,7 @@ function Calibration() {
     setClicked(true);
     setSuccess(null);
     try {
-      const response = await axios.post(`/calibrate`);
+      const response = await axios.post(`/api/calibrate`);
       setClicked(false);
       setSuccess(true);
     } catch (err) {

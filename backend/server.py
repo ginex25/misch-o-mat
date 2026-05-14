@@ -1,6 +1,8 @@
 import threading
 import time
 
+from routes.calibration import calibration_bp
+
 try:
     import RPi.GPIO as GPIO
 except RuntimeError:
@@ -15,15 +17,18 @@ from routes.hardware import hardware_bp
 from routes.liquids import liquids_bp
 from routes.drinks import drinks_bp
 from routes.frontend import frontend_bp
+from routes.connections import connections_bp
 
 log = setup_logger()
 
 app = Flask(__name__, static_folder="../frontend/dist", static_url_path="/")
 CORS(app, origins="*")
 app.register_blueprint(frontend_bp)
-app.register_blueprint(hardware_bp)
-app.register_blueprint(liquids_bp)
-app.register_blueprint(drinks_bp)
+app.register_blueprint(hardware_bp, url_prefix='/api')
+app.register_blueprint(liquids_bp, url_prefix='/api')
+app.register_blueprint(drinks_bp, url_prefix='/api')
+app.register_blueprint(connections_bp, url_prefix='/api/connections')
+app.register_blueprint(calibration_bp, url_prefix='/api/calibration')
 
 
 def button_listener():
