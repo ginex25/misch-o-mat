@@ -1,44 +1,17 @@
-import React, {useEffect, useState} from "react";
+import React from "react";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import {NavLink, useNavigate} from "react-router-dom";
+import {NavLink, useNavigate, useOutletContext} from "react-router-dom";
 import axios from "axios";
 import {useSnackbar} from "../components/Snackbar.jsx";
-import ConnectionModel from "../models/ConnectionModel.js";
 
 export default function ConnectionsPage() {
     const navigate = useNavigate();
     const {showError} = useSnackbar();
-
-    const [connections, setConnections] = useState([]);
-    const [size, setSize] = useState(250);
-
-    useEffect(() => {
-        loadConnections();
-    }, []);
-
-    const loadConnections = async () => {
-        try {
-            const response = await axios.get("/api/connections");
-
-            setSize(response.data.cup_size);
-
-            const mappedConnections = response.data.connections.map(
-                (conn) => new ConnectionModel(conn)
-            );
-
-            setConnections(mappedConnections);
-        } catch (err) {
-            showError("Anschlüsse konnte nicht geladen werden");
-            console.error(err);
-        }
-    };
-
+    const {connections, size, setSize, loading} = useOutletContext();
 
     const openConnection = (connection) => {
-        navigate(`/connections/${connection.id}`, {
-            state: {connection},
-        });
-    }
+        navigate(String(connection.id));
+    };
 
     const changeValue = async (ev) => {
         try {

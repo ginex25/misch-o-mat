@@ -3,7 +3,7 @@ from json import JSONDecodeError
 from flask import Blueprint, jsonify, request
 
 from core.logger import setup_logger
-from services.connect_service import ConnectionService
+from services.connection_service import ConnectionService
 
 log = setup_logger()
 connections_bp = Blueprint("connections", __name__)

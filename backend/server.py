@@ -1,3 +1,4 @@
+import os
 import threading
 import time
 
@@ -19,6 +20,7 @@ from routes.drinks import drinks_bp
 from routes.frontend import frontend_bp
 from routes.connections import connections_bp
 
+PRODUCTION = os.getenv('ENV') == 'production'
 log = setup_logger()
 
 app = Flask(__name__, static_folder="../frontend/dist", static_url_path="/")
@@ -47,6 +49,6 @@ if __name__ == '__main__':
     listener_thread = threading.Thread(target=button_listener, daemon=True)
     listener_thread.start()
     try:
-        app.run(host="0.0.0.0", port=5000, debug=True)
+        app.run(host="0.0.0.0", port=5000, debug=not PRODUCTION)
     except KeyboardInterrupt:
         clean_gpio()

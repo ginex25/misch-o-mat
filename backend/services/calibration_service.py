@@ -3,7 +3,7 @@ from database.calibration import get_offset, set_offset
 from hardware import scale as scale_hw
 from hardware.bridge import drive_up, drive_away
 from hardware.pump import pump_on, pump_off
-from hardware.stepper import move_to_hole, move_by_steps
+from hardware.stepper import move_to_hole, move_by_steps, home_stepper
 
 log = setup_logger()
 
@@ -12,6 +12,11 @@ class CalibrationService:
     def __init__(self):
         self._current_connection = None
         self._current_offset = 0
+
+    def reset_session(self):
+        home_stepper()
+        self._current_offset = 0
+        self._current_connection = None
 
     def move_to(self, connection: int):
         if not (1 <= connection <= 19):

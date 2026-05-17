@@ -1,9 +1,10 @@
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import {useLocation, useNavigate} from "react-router-dom";
-import React, {useEffect, useState} from "react";
+import {useLocation, useNavigate, useOutletContext, useParams} from "react-router-dom";
+import React, {useEffect, useMemo, useState} from "react";
 import {useSnackbar} from "../components/Snackbar.jsx";
 import axios from "axios";
 import {parseLiquids} from "../models/Liquid.js";
+import ConnectionModel from "../models/ConnectionModel.js";
 
 const Status = Object.freeze({
     IDLE: "idle",
@@ -19,21 +20,53 @@ const Status = Object.freeze({
 export default function ConnectionDetailPage() {
     const navigate = useNavigate();
     const location = useLocation();
+    const {id: idParam} = useParams();
     const {showError} = useSnackbar();
+    const {connections, setConnections, loading: connectionsLoading} = useOutletContext();
 
-    const {connection} = location.state;
+    const connection = useMemo(() => {
+        const fromState = location.state?.connection;
+        if (fromState && String(fromState.id) === String(idParam)) {
+            return fromState;
+        }
+        return connections.find((c) => String(c.id) === String(idParam));
+    }, [connections, idParam, location.state?.connection]);
 
-    const [form, setForm] = useState(() => ({
-        liquid: connection.liquid?.id ? String(connection.liquid.id) : null,
-        fill: connection.liquid?.fill ?? 0,
-        offset: connection.offset ?? 0,
-    }));
+    const [form, setForm] = useState({
+        liquid: null,
+        fill: 0,
+        offset: 0,
+    });
 
-    const [savedForm, setSavedForm] = useState(() => ({
-        liquid: connection.liquid?.id ? String(connection.liquid.id) : null,
-        fill: connection.liquid?.fill ?? 0,
-        offset: connection.offset ?? 0,
-    }));
+    const [savedForm, setSavedForm] = useState({
+        liquid: null,
+        fill: 0,
+        offset: 0,
+    });
+
+    const [isTesting, setIsTesting] = useState(false);
+
+    const [liquids, setLiquids] = useState([]);
+
+    const [status, setStatus] = useState(Status.IDLE);
+
+    useEffect(() => {
+        if (connectionsLoading || !idParam) return;
+        if (!connection && connections.length > 0) {
+            navigate("/connections", {replace: true});
+        }
+    }, [connection, connections.length, connectionsLoading, idParam, navigate]);
+
+    useEffect(() => {
+        if (!connection) return;
+        const next = {
+            liquid: connection.liquid?.id ? String(connection.liquid.id) : null,
+            fill: connection.liquid?.fill ?? 0,
+            offset: connection.offset ?? 0,
+        };
+        setForm(next);
+        setSavedForm(next);
+    }, [connection]);
 
     const fillOptions = React.useMemo(() => {
         const base = Array.from(
@@ -49,14 +82,6 @@ export default function ConnectionDetailPage() {
 
         return base;
     }, [form.fill]);
-
-    const [isTesting, setIsTesting] = useState(false);
-
-    const [liquids, setLiquids] = useState(() =>
-        connection.liquid ? [connection.liquid] : []
-    );
-
-    const [status, setStatus] = useState(Status.IDLE);
 
     const statusLabels = {
         [Status.MOVING]: "Position wird angefahren...",
@@ -76,6 +101,12 @@ export default function ConnectionDetailPage() {
     useEffect(() => {
         fetchLiquids();
     }, []);
+
+    useEffect(() => {
+        if (connection?.liquid && liquids.length === 0) {
+            setLiquids([connection.liquid]);
+        }
+    }, [connection, liquids.length]);
 
     const fetchLiquids = async () => {
         try {
@@ -153,10 +184,14 @@ export default function ConnectionDetailPage() {
     };
 
     const saveConfiguration = async () => {
-        const originalLiquidId = connection.liquid?.id ?? null;
+        const originalLiquidIdStr = connection.liquid?.id != null
+            ? String(connection.liquid.id)
+            : null;
+        const formLiquidStr =
+            form.liquid && form.liquid !== "0" ? String(form.liquid) : null;
         const originalFill = connection.liquid?.fill ?? 0;
 
-        const liquidChanged = form.liquid !== originalLiquidId;
+        const liquidChanged = formLiquidStr !== originalLiquidIdStr;
         const fillChanged = form.fill !== originalFill;
 
         const offsetChanged = form.offset !== savedForm.offset;
@@ -164,12 +199,12 @@ export default function ConnectionDetailPage() {
         const body = {};
 
         if (liquidChanged) {
-            body.liquid_id = form.liquid;
+            body.liquid_id = formLiquidStr;
         }
 
         if (fillChanged) {
             body.liquid_fill = form.fill;
-            body.liquid_id = form.liquid;
+            body.liquid_id = formLiquidStr;
         }
 
         if (offsetChanged) {
@@ -181,11 +216,41 @@ export default function ConnectionDetailPage() {
         try {
             await axios.post(`/api/connections/${connection.id}`, body);
             setSavedForm({...form});
+
+            const selectedLiquid =
+                form.liquid && form.liquid !== "0"
+                    ? liquids.find((l) => String(l.id) === String(form.liquid))
+                    : null;
+            const apiRow = {
+                connection: connection.id,
+                offset: form.offset,
+                liquid_id: selectedLiquid?.id ?? null,
+                liquid_name: selectedLiquid?.name ?? null,
+                liquid_alcohol: selectedLiquid?.isAlcohol ?? false,
+                liquid_level: form.fill,
+            };
+            setConnections((prev) =>
+                prev.map((c) =>
+                    c.id === connection.id ? new ConnectionModel(apiRow) : c
+                )
+            );
         } catch (e) {
             showError("Konfiguration konnte nicht gespeichert werden");
             console.log(e);
         }
     };
+
+    if (connectionsLoading && !connection) {
+        return (
+            <div className="pt-4 font-sans flex flex-col h-[100dvh] items-center justify-center text-[#8ca3af]">
+                Laden…
+            </div>
+        );
+    }
+
+    if (!connection) {
+        return null;
+    }
 
     return (<div className="pt-4 font-sans flex flex-col h-[100dvh]">
         <div className="flex items-center justify-between mb-6">
@@ -217,13 +282,14 @@ export default function ConnectionDetailPage() {
 
                 <div className="relative mb-5">
                     <select
-                        value={form.liquid}
-                        onChange={(e) =>
+                        value={form.liquid ?? "0"}
+                        onChange={(e) => {
+                            const v = e.target.value;
                             setForm(prev => ({
                                 ...prev,
-                                liquid: e.target.value || null
-                            }))
-                        }
+                                liquid: !v || v === "0" ? null : v,
+                            }));
+                        }}
                         className="w-full appearance-none bg-[#2a3d38] text-white py-3 px-4 rounded-2xl text-lg focus:outline-none"
                     >
                         <option value="0">— kein Getränk —</option>

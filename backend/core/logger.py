@@ -14,7 +14,9 @@ def setup_logger(name: str = "app") -> logging.Logger:
     if logger.hasHandlers():
         return logger
 
-    logger.setLevel(logging.DEBUG)
+    production = os.getenv('ENV') == 'production'
+
+    logger.setLevel(logging.INFO if production else logging.DEBUG)
 
     formatter = logging.Formatter(
         fmt="%(asctime)s [%(levelname)s] %(module)s: %(message)s",
@@ -22,7 +24,7 @@ def setup_logger(name: str = "app") -> logging.Logger:
     )
 
     console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.DEBUG)
+    console_handler.setLevel(logging.INFO if production else logging.DEBUG)
     console_handler.setFormatter(formatter)
 
     file_handler = RotatingFileHandler(

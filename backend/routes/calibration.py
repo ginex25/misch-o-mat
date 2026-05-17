@@ -50,3 +50,12 @@ def test(connection):
     except Exception as e:
         log.exception("Error during calibration step")
         return {"error": str(e)}, 400
+
+@calibration_bp.route("/reset", methods=["POST"])
+def reset_session():
+    try:
+        _service.reset_session()
+        return {}, 204
+    except Exception as e:
+        log.exception("Error during calibration reset")
+        return {"error": str(e)}, 400
