@@ -52,7 +52,7 @@ def calibrate(known_weight):
         json.dump(config, config_file)
 
 
-def scale(target_weight, trailing, threshold=2):
+def scale(target_weight, trailing, threshold=2) -> float:
     setup_scale()
     weight = 0
     previous_weight = 0
@@ -90,6 +90,8 @@ def scale(target_weight, trailing, threshold=2):
             weight = current_weight
             previous_weight = weight
             log.debug(f"Current weight: {weight}g")
+
+    return weight
 
 
 def wait_for_weight_increase(timeout: float = 3.0, threshold: float = 2.0, baseline: float | None = None,

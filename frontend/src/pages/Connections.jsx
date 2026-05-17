@@ -59,9 +59,9 @@ export default function ConnectionsPage() {
             </NavLink>
         </div>
 
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-1">
             <div>
-                <div className="px-1 text-[18px] font-normal mb-1 mt-2">Bechergröße</div>
+                <div className="text-[20px] font-bold mb-2">Bechergröße</div>
             </div>
         </div>
 

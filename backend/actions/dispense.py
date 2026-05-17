@@ -1,14 +1,16 @@
 import json
 import os
+from typing import Dict
 
 from actions.reset import reset
 from core.logger import setup_logger
-from hardware.stepper import move_to_hole, home_stepper
 from hardware.bridge import drive_up, drive_away
 from hardware.pump import pump_off, pump_on
 from hardware.scale import scale, tare
+from hardware.stepper import move_to_hole, home_stepper
 
 log = setup_logger()
+
 
 def load_liquids_database(file_path="/home/misch-o-mat/misch-o-mat/backend/database/liquids.json"):
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -19,9 +21,11 @@ def load_liquids_database(file_path="/home/misch-o-mat/misch-o-mat/backend/datab
         return json.load(file)
 
 
-def dispense_drink(ingredients):
+def dispense_drink(ingredients: Dict[str, float]) -> Dict[str, float]:
     start_position = 0
     liquids_data = load_liquids_database()
+
+    dispense_amounts = {}
 
     try:
         for ingredient_id, amount in ingredients.items():
@@ -32,8 +36,10 @@ def dispense_drink(ingredients):
             drive_up()
 
             pump_on()
-            scale(amount, trailing=False)
+            actual = scale(amount, trailing=False)
             pump_off()
+
+            dispense_amounts[ingredient_id] = actual
 
             drive_away()
             start_position = target_position
@@ -45,3 +51,4 @@ def dispense_drink(ingredients):
 
     home_stepper()
     log.info("Dispensing finished")
+    return dispense_amounts

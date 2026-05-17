@@ -1,9 +1,13 @@
-import os
 import json
-from flask import Blueprint, jsonify, request
+import os
 from json import JSONDecodeError
+
+from flask import Blueprint, jsonify, request
+
 from actions.dispense import dispense_drink
 from core.logger import setup_logger
+from database import liquids as liquids_repo
+from database.drinks import DrinkCategory, get_by_name
 
 log = setup_logger()
 drinks_bp = Blueprint('drinks', __name__)
@@ -19,30 +23,19 @@ def preparation():
 
     drink_name = data['drink']
     strength = data['strength']
-    filename = "longdrinks.json" if data['category'] == "Longdrinks" else "mixdrinks.json"
-
-    drinks_filepath = os.path.join(JSON_FOLDER, filename)
-    liquids_filepath = os.path.join(JSON_FOLDER, 'liquids.json')
-
-    if not os.path.isfile(drinks_filepath) or not os.path.isfile(liquids_filepath):
-        log.error("Drinks or liquids file not found in /preparation endpoint")
-        return jsonify({"error": "File not found"}), 404
 
     try:
-        with open(drinks_filepath, 'r') as drinks_file:
-            drinks_data = json.load(drinks_file)
+        category = DrinkCategory(data['category'])
+    except ValueError:
+        return jsonify({"error": "Invalid category"}), 400
 
-        with open(liquids_filepath, 'r') as liquids_file:
-            liquids_data = json.load(liquids_file)
-
-        drink_data = None
-        for drink_id, drink in drinks_data.items():
-            if drink['name'] == drink_name:
-                drink_data = drink
-                break
+    try:
+        drink_data = get_by_name(drink_name, category)
 
         if drink_data is None:
             return jsonify({"error": "Drink not found"}), 404
+
+        liquids_data = liquids_repo.get_all()
 
         drink_ml = drink_data['gesamtmenge_ml']
         ingredients = {}
@@ -54,28 +47,19 @@ def preparation():
                 log.warning(f"Ingredient ID {ing_id_str} not found in liquids for drink '{drink_name}'")
                 continue
 
-            if filename == "mixdrinks.json":
-                is_alcohol = liquids_data[ing_id_str].get('alkohol', False)
-
-                if not is_alcohol:
-                    amount = (percentage + 5) / 100 * drink_ml if strength == "mittel" else (
-                                                                                                    percentage + 10) / 100 * drink_ml if strength == "schwach" else percentage / 100 * drink_ml
-                else:
-                    amount = (percentage - 10) / 100 * drink_ml if strength == "schwach" else (
-                                                                                                      percentage - 5) / 100 * drink_ml if strength == "mittel" else percentage / 100 * drink_ml
-            else:
-                amount = percentage / 100 * drink_ml
-
-            liquids_data[ing_id_str]['fuellstand_ml'] -= amount
+            amount = _calculate_ingredient_amount(ing_id_str, percentage, drink_ml, strength, category, liquids_data)
             ingredients[ingredient_id] = amount
 
-        with open(liquids_filepath, 'w') as liquids_file:
-            json.dump(liquids_data, liquids_file, indent=4, sort_keys=False)
-
         try:
-            dispense_drink(ingredients)
+            actual_amounts = dispense_drink(ingredients)
         except Exception as e:
             return jsonify({"error": f"Dispensing failed: {str(e)}"}), 500
+
+        for ingredient_id, amount in actual_amounts.items():
+            ing_id_str = str(ingredient_id)
+            liquids_data[ing_id_str]['fuellstand_ml'] -= amount
+
+        liquids_repo.update_all(liquids_data)
 
         return '', 204
 
@@ -149,3 +133,25 @@ def update_value(file_name):
         log.exception("Error while updating values in /update request")
         return jsonify({"error": str(e)}), 500
 
+
+def _calculate_ingredient_amount(ing_id_str: str, percentage: float, drink_ml: float,
+                                 strength: str, category: DrinkCategory, liquids_data: dict) -> float:
+    is_alcohol = liquids_data[ing_id_str].get('alkohol', False)
+
+    if category == DrinkCategory.LONGDRINKS:
+        return percentage / 100 * drink_ml
+
+    if not is_alcohol:
+        if strength == "mittel":
+            return (percentage + 5) / 100 * drink_ml
+        elif strength == "schwach":
+            return (percentage + 10) / 100 * drink_ml
+        else:
+            return percentage / 100 * drink_ml
+    else:
+        if strength == "schwach":
+            return (percentage - 10) / 100 * drink_ml
+        elif strength == "mittel":
+            return (percentage - 5) / 100 * drink_ml
+        else:
+            return percentage / 100 * drink_ml
