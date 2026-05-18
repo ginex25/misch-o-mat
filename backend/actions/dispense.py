@@ -1,12 +1,13 @@
 import json
 import os
+import time
 from typing import Dict
 
 from actions.reset import reset
 from core.logger import setup_logger
 from hardware.bridge import drive_up, drive_away
 from hardware.pump import pump_off, pump_on
-from hardware.scale import scale, tare
+from hardware.scale import scale, scale_single, tare
 from hardware.stepper import move_to_hole, home_stepper
 
 log = setup_logger()
@@ -42,8 +43,10 @@ def dispense_drink(ingredients: Dict[str, float]) -> Dict[str, float]:
             dispense_amounts[ingredient_id] = actual
 
             drive_away()
-            start_position = target_position
 
+            last_weight = scale_single()
+            log.debug(f"last_weight: {last_weight}")
+            start_position = target_position
     except Exception as e:
         log.exception("Error during dispensing")
         reset()

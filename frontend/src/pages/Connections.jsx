@@ -39,7 +39,7 @@ export default function ConnectionsPage() {
         </div>
 
         <div className="flex gap-2 flex-wrap mb-6">
-            {[250, 300, 350, 400, 450, 500].map((sizeOption) => (
+            {[200, 250, 300, 350, 400, 450, 500].map((sizeOption) => (
                 <button
                     key={sizeOption}
                     onClick={() => changeValue(sizeOption)}

@@ -141,6 +141,7 @@ def _calculate_ingredient_amount(ing_id_str: str, percentage: float, drink_ml: f
     if category == DrinkCategory.LONGDRINKS:
         return percentage / 100 * drink_ml
 
+    log.debug("is_alcohol: {is_alcohol}")
     if not is_alcohol:
         if strength == "mittel":
             return (percentage + 5) / 100 * drink_ml
@@ -152,6 +153,8 @@ def _calculate_ingredient_amount(ing_id_str: str, percentage: float, drink_ml: f
         if strength == "schwach":
             return (percentage - 10) / 100 * drink_ml
         elif strength == "mittel":
-            return (percentage - 5) / 100 * drink_ml
+            te = (percentage - 5) / 100 * drink_ml
+            log.debug("TE: {te}")
+            return te
         else:
             return percentage / 100 * drink_ml

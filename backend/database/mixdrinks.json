@@ -1,290 +1,290 @@
 {
-    "1": {
-        "name": "FaKo",
-        "zutaten": {
-            "29": 25,
-            "3": 75
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/fako.jpg"
+  "1": {
+    "name": "FaKo",
+    "zutaten": {
+      "29": 25,
+      "3": 75
     },
-    "2": {
-        "name": "Havana Cola",
-        "zutaten": {
-            "30": 25,
-            "4": 75
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/havana_cola.jpg"
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/fako.jpg"
+  },
+  "2": {
+    "name": "Havana Cola",
+    "zutaten": {
+      "30": 25,
+      "4": 75
     },
-    "3": {
-        "name": "Captain Cola",
-        "zutaten": {
-            "31": 25,
-            "4": 75
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/captain_cola.jpg"
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/havana_cola.jpg"
+  },
+  "3": {
+    "name": "Captain Cola",
+    "zutaten": {
+      "31": 25,
+      "4": 75
     },
-    "4": {
-        "name": "Gin Tonic",
-        "zutaten": {
-            "27": 25,
-            "15": 75
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/gin_tonic.jpg"
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/captain_cola.jpg"
+  },
+  "4": {
+    "name": "Gin Tonic",
+    "zutaten": {
+      "27": 25,
+      "15": 75
     },
-    "5": {
-        "name": "Wodka-E",
-        "zutaten": {
-            "28": 25,
-            "1": 75
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/wodka-e.jpg"
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/gin_tonic.jpg"
+  },
+  "5": {
+    "name": "Wodka-E",
+    "zutaten": {
+      "28": 25,
+      "1": 75
     },
-    "6": {
-        "name": "Flying Hirsch",
-        "zutaten": {
-            "36": 25,
-            "1": 75
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/flying_hirsch.jpg"
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/wodka-e.jpg"
+  },
+  "6": {
+    "name": "Flying Hirsch",
+    "zutaten": {
+      "36": 25,
+      "1": 75
     },
-    "7": {
-        "name": "Wodka Cola",
-        "zutaten": {
-            "28": 25,
-            "4": 75
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/wodka_cola.jpg"
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/flying_hirsch.jpg"
+  },
+  "7": {
+    "name": "Wodka Cola",
+    "zutaten": {
+      "28": 25,
+      "4": 75
     },
-    "8": {
-        "name": "Whiskey Cola",
-        "zutaten": {
-            "32": 25,
-            "4": 75
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/whiskey_cola.jpg"
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/wodka_cola.jpg"
+  },
+  "8": {
+    "name": "Whiskey Cola",
+    "zutaten": {
+      "32": 25,
+      "4": 75
     },
-    "9": {
-        "name": "Siggi Smallz",
-        "zutaten": {
-            "36": 25,
-            "9": 75
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/siggi_smallz.jpg"
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/whiskey_cola.jpg"
+  },
+  "9": {
+    "name": "Siggi Smallz",
+    "zutaten": {
+      "36": 25,
+      "9": 75
     },
-    "10": {
-        "name": "Wodka-O",
-        "zutaten": {
-            "28": 25,
-            "5": 75
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/wodka-o.jpg"
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/siggi_smallz.jpg"
+  },
+  "10": {
+    "name": "Wodka-O",
+    "zutaten": {
+      "28": 25,
+      "5": 75
     },
-    "11": {
-        "name": "Wodka Eistee",
-        "zutaten": {
-            "28": 25,
-            "11": 75
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/wodka_eistee.jpg"
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/wodka-o.jpg"
+  },
+  "11": {
+    "name": "Wodka Eistee",
+    "zutaten": {
+      "28": 25,
+      "11": 75
     },
-    "12": {
-        "name": "Rostocker Eis",
-        "zutaten": {
-            "29": 25,
-            "11": 75
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/rostocker_eis.jpg"
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/wodka_eistee.jpg"
+  },
+  "12": {
+    "name": "Rostocker Eis",
+    "zutaten": {
+      "29": 25,
+      "11": 75
     },
-    "13": {
-        "name": "Goldi Eistee",
-        "zutaten": {
-            "26": 30,
-            "11": 70
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/goldi_eistee.jpg"
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/rostocker_eis.jpg"
+  },
+  "13": {
+    "name": "Goldi Eistee",
+    "zutaten": {
+      "26": 30,
+      "11": 70
     },
-    "14": {
-        "name": "East German Ice",
-        "zutaten": {
-            "26": 30,
-            "2": 70
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/east_german_ice.jpg"
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/goldi_eistee.jpg"
+  },
+  "14": {
+    "name": "East German Ice",
+    "zutaten": {
+      "26": 30,
+      "2": 70
     },
-    "15": {
-        "name": "Wodka Lemon",
-        "zutaten": {
-            "28": 25,
-            "42": 75
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/wodka_lemon.jpg"
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/east_german_ice.jpg"
+  },
+  "15": {
+    "name": "Wodka Lemon",
+    "zutaten": {
+      "28": 25,
+      "42": 75
     },
-    "16": {
-        "name": "Wildberry Lillet",
-        "zutaten": {
-            "35": 30,
-            "13": 70
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/wildberry_lillet.jpg"
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/wodka_lemon.jpg"
+  },
+  "16": {
+    "name": "Wildberry Lillet",
+    "zutaten": {
+      "35": 30,
+      "13": 70
     },
-    "17": {
-        "name": "Wodka-A",
-        "zutaten": {
-            "28": 25,
-            "6": 75
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/wodka-a.jpg"
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/wildberry_lillet.jpg"
+  },
+  "17": {
+    "name": "Wodka-A",
+    "zutaten": {
+      "28": 25,
+      "6": 75
     },
-    "18": {
-        "name": "Highball",
-        "zutaten": {
-            "32": 25,
-            "17": 75
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/highball.jpg"
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/wodka-a.jpg"
+  },
+  "18": {
+    "name": "Highball",
+    "zutaten": {
+      "32": 25,
+      "17": 75
     },
-    "19": {
-        "name": "Tequila Slammer",
-        "zutaten": {
-            "34": 25,
-            "14": 75
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/tequila_slammer.jpg"
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/highball.jpg"
+  },
+  "19": {
+    "name": "Tequila Slammer",
+    "zutaten": {
+      "34": 25,
+      "14": 75
     },
-    "20": {
-        "name": "Wodka Tonic",
-        "zutaten": {
-            "28": 25,
-            "15": 75
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/wodka_tonic.jpg"
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/tequila_slammer.jpg"
+  },
+  "20": {
+    "name": "Wodka Tonic",
+    "zutaten": {
+      "28": 25,
+      "15": 75
     },
-    "21": {
-        "name": "Cape Cod",
-        "zutaten": {
-            "28": 25,
-            "7": 75
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/cape_cod.jpg"
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/wodka_tonic.jpg"
+  },
+  "21": {
+    "name": "Cape Cod",
+    "zutaten": {
+      "28": 25,
+      "7": 75
     },
-    "22": {
-        "name": "Gin Lemon",
-        "zutaten": {
-            "27": 25,
-            "42": 75
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/gin_lemon.jpg"
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/cape_cod.jpg"
+  },
+  "22": {
+    "name": "Gin Lemon",
+    "zutaten": {
+      "27": 25,
+      "42": 75
     },
-    "23": {
-        "name": "Aperol Tonic",
-        "zutaten": {
-            "24": 30,
-            "15": 70
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/aperol_tonic.jpg"
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/gin_lemon.jpg"
+  },
+  "23": {
+    "name": "Aperol Tonic",
+    "zutaten": {
+      "24": 30,
+      "15": 70
     },
-    "24": {
-        "name": "Mimosa",
-        "zutaten": {
-            "37": 67,
-            "5": 33
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/mimosa.jpg"
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/aperol_tonic.jpg"
+  },
+  "24": {
+    "name": "Mimosa",
+    "zutaten": {
+      "37": 67,
+      "5": 33
     },
-    "25": {
-        "name": "Whiskey Tonic",
-        "zutaten": {
-            "32": 25,
-            "15": 75
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/whiskey_tonic.jpg"
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/mimosa.jpg"
+  },
+  "25": {
+    "name": "Whiskey Tonic",
+    "zutaten": {
+      "32": 25,
+      "15": 75
     },
-    "26": {
-        "name": "Sekt Mate",
-        "zutaten": {
-            "37": 60,
-            "12": 40
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/sekt_mate.jpg"
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/whiskey_tonic.jpg"
+  },
+  "26": {
+    "name": "Sekt Mate",
+    "zutaten": {
+      "37": 60,
+      "12": 40
     },
-    "27": {
-        "name": "Wodka Mate",
-        "zutaten": {
-            "28": 25,
-            "12": 75
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/wodka_mate.jpg"
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/sekt_mate.jpg"
+  },
+  "27": {
+    "name": "Wodka Mate",
+    "zutaten": {
+      "28": 25,
+      "12": 75
     },
-    "28": {
-        "name": "KoMa",
-        "zutaten": {
-            "29": 25,
-            "12": 75
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/koma.jpg"
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/wodka_mate.jpg"
+  },
+  "28": {
+    "name": "KoMa",
+    "zutaten": {
+      "29": 25,
+      "12": 75
     },
-    "29": {
-        "name": "MaGi",
-        "zutaten": {
-            "27": 25,
-            "12": 75
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/magi.jpg"
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/koma.jpg"
+  },
+  "29": {
+    "name": "MaGi",
+    "zutaten": {
+      "27": 25,
+      "12": 75
     },
-    "30": {
-        "name": "Rum Lemon",
-        "zutaten": {
-            "30": 25,
-            "42": 75
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/rum_lemon.jpg"
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/magi.jpg"
+  },
+  "30": {
+    "name": "Rum Lemon",
+    "zutaten": {
+      "30": 25,
+      "42": 75
     },
-    "31": {
-        "name": "J\u00e4ger Tonic",
-        "zutaten": {
-            "36": 25,
-            "15": 75
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/jaeger_tonic.jpg"
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/rum_lemon.jpg"
+  },
+  "31": {
+    "name": "J\u00e4ger Tonic",
+    "zutaten": {
+      "36": 25,
+      "15": 75
     },
-    "32": {
-        "name": "Wodka Mule",
-        "zutaten": {
-            "28": 25,
-            "16": 75
-        },
-        "gesamtmenge_ml": 500,
-        "url": "mixdrinks/wodka_mule.jpg"
-    }
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/jaeger_tonic.jpg"
+  },
+  "32": {
+    "name": "Wodka Mule",
+    "zutaten": {
+      "28": 25,
+      "16": 75
+    },
+    "gesamtmenge_ml": 250.0,
+    "url": "mixdrinks/wodka_mule.jpg"
+  }
 }
