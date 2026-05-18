@@ -4,7 +4,6 @@ import React, {useEffect, useMemo, useState} from "react";
 import {useSnackbar} from "../components/Snackbar.jsx";
 import axios from "axios";
 import {parseLiquids} from "../models/Liquid.js";
-import ConnectionModel from "../models/ConnectionModel.js";
 
 const Status = Object.freeze({
     IDLE: "idle",
@@ -22,7 +21,7 @@ export default function ConnectionDetailPage() {
     const location = useLocation();
     const {id: idParam} = useParams();
     const {showError} = useSnackbar();
-    const {connections, setConnections, loading: connectionsLoading} = useOutletContext();
+    const {connections, loading: connectionsLoading, loadConnections} = useOutletContext();
 
     const connection = useMemo(() => {
         const fromState = location.state?.connection;
@@ -216,24 +215,7 @@ export default function ConnectionDetailPage() {
         try {
             await axios.post(`/api/connections/${connection.id}`, body);
             setSavedForm({...form});
-
-            const selectedLiquid =
-                form.liquid && form.liquid !== "0"
-                    ? liquids.find((l) => String(l.id) === String(form.liquid))
-                    : null;
-            const apiRow = {
-                connection: connection.id,
-                offset: form.offset,
-                liquid_id: selectedLiquid?.id ?? null,
-                liquid_name: selectedLiquid?.name ?? null,
-                liquid_alcohol: selectedLiquid?.isAlcohol ?? false,
-                liquid_level: form.fill,
-            };
-            setConnections((prev) =>
-                prev.map((c) =>
-                    c.id === connection.id ? new ConnectionModel(apiRow) : c
-                )
-            );
+            await loadConnections();
         } catch (e) {
             showError("Konfiguration konnte nicht gespeichert werden");
             console.log(e);
