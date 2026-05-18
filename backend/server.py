@@ -2,23 +2,20 @@ import os
 import threading
 import time
 
-from routes.calibration import calibration_bp
-
-try:
-    import RPi.GPIO as GPIO
-except RuntimeError:
-    import mocks.gpio as GPIO
 from flask import Flask
 from flask_cors import CORS
+
 from actions.reset import reset
-from hardware.setup import clean_gpio, setup_gpio
 from config.pins import BUTTON_PIN
 from core.logger import setup_logger
-from routes.hardware import hardware_bp
-from routes.liquids import liquids_bp
+from hardware import GPIO
+from hardware.setup import clean_gpio, setup_gpio
+from routes.calibration import calibration_bp
+from routes.connections import connections_bp
 from routes.drinks import drinks_bp
 from routes.frontend import frontend_bp
-from routes.connections import connections_bp
+from routes.hardware import hardware_bp
+from routes.liquids import liquids_bp
 
 PRODUCTION = os.getenv('ENV') == 'production'
 log = setup_logger()

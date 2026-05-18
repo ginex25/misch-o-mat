@@ -1,12 +1,8 @@
-from core.logger import setup_logger
-
-try:
-    import RPi.GPIO as GPIO
-except RuntimeError:
-    import mocks.gpio as GPIO
-
 import time
+
 from config.pins import LIN1, LIN2
+from core.logger import setup_logger
+from hardware import GPIO
 
 pause_duration = 0.3
 

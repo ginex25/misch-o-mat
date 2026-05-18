@@ -1,13 +1,9 @@
-from core.logger import setup_logger
-
-try:
-    import RPi.GPIO as GPIO
-except RuntimeError:
-    import mocks.gpio as GPIO
-
 from config.pins import PUMP_PIN
+from core.logger import setup_logger
+from hardware import GPIO
 
 log = setup_logger()
+
 
 def pump_on():
     try:

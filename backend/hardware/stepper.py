@@ -1,13 +1,9 @@
 import time
 
+import config.pins as pins
 from core.logger import setup_logger
 from database.calibration import get_offset
-
-try:
-    import RPi.GPIO as GPIO
-except RuntimeError:
-    import mocks.gpio as GPIO
-import config.pins as pins
+from hardware import GPIO
 
 HOME_OFFSET = 55
 STEPS_PER_REVOLUTION = 3200

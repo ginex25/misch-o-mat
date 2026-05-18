@@ -1,12 +1,8 @@
-try:
-    import RPi.GPIO as GPIO
-except RuntimeError:
-    import mocks.gpio as GPIO
 import config.pins as pins
+from hardware import GPIO
 
 
 def setup_gpio():
-    import hardware.scale
     GPIO.setmode(GPIO.BCM)
 
     # Button

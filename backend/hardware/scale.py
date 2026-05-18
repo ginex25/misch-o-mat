@@ -1,18 +1,10 @@
 import json
 import os
+import time
 
 from config.pins import DOUT_PIN, PD_SCK_PIN, GAIN_CHANNEL_A
 from core.logger import setup_logger
-
-try:
-    from hx711 import HX711
-except (RuntimeError, ImportError):
-    from mocks.hardware.scale import HX711
-try:
-    import RPi.GPIO as GPIO
-except RuntimeError:
-    import mocks.gpio as GPIO
-import time
+from hardware import GPIO, HX711
 
 log = setup_logger()
 
