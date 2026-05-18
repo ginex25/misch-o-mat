@@ -134,87 +134,8 @@ function Hero() {
           ))}
         </div>
       </div>
-
       <div className="w-full grid grid-cols-2 mt-2">
-        <div>
-          <h3
-            className={`text-white text-lg font-bold leading-tight tracking-[-0.015em] px-2 pb-2 pt-4 ${
-              category === "Longdrinks" ? "opacity-40" : ""
-            }`}
-          >
-            Wähle deine Stärke
-          </h3>
-          <div className="flex gap-3 p-2 flex-wrap pr-4">
-            <div
-              className={`flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full ${
-                strength === "schwach" && category !== "Longdrinks"
-                  ? "bg-[#1fe0a6] text-[#12211d]"
-                  : "bg-[#25463c]"
-              } pl-4 pr-4 active:scale-95 transition-all duration-100 ${
-                category === "Longdrinks"
-                  ? "opacity-50 pointer-events-none"
-                  : ""
-              }`}
-              onClick={() =>
-                category !== "Longdrinks" && setStrength("schwach")
-              }
-            >
-              <p
-                className={`text-sm ${
-                  strength === "schwach" && category !== "Longdrinks"
-                    ? "font-bold"
-                    : "font-medium"
-                } leading-normal`}
-              >
-                Schwach
-              </p>
-            </div>
-            <div
-              className={`flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full ${
-                strength === "mittel" && category !== "Longdrinks"
-                  ? "bg-[#1fe0a6] text-[#12211d]"
-                  : "bg-[#25463c]"
-              } pl-4 pr-4 active:scale-95 transition-all duration-100 ${
-                category === "Longdrinks"
-                  ? "opacity-50 pointer-events-none"
-                  : ""
-              }`}
-              onClick={() => category !== "Longdrinks" && setStrength("mittel")}
-            >
-              <p
-                className={`text-sm ${
-                  strength === "mittel" && category !== "Longdrinks"
-                    ? "font-bold"
-                    : "font-medium"
-                } leading-normal`}
-              >
-                Mittel
-              </p>
-            </div>
-            <div
-              className={`flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full ${
-                strength === "stark" && category !== "Longdrinks"
-                  ? "bg-[#1fe0a6] text-[#12211d]"
-                  : "bg-[#25463c]"
-              } pl-4 pr-4 active:scale-95 transition-all duration-100 ${
-                category === "Longdrinks"
-                  ? "opacity-50 pointer-events-none"
-                  : ""
-              }`}
-              onClick={() => category !== "Longdrinks" && setStrength("stark")}
-            >
-              <p
-                className={`text-sm ${
-                  strength === "stark" && category !== "Longdrinks"
-                    ? "font-bold"
-                    : "font-medium"
-                } leading-normal`}
-              >
-                Stark
-              </p>
-            </div>
-          </div>
-        </div>
+        <div></div>
         <div className="py-1 mt-auto ml-auto mb-[4px] mr-2">
           <div className="flex flex-row items-end justify-end">
             <div className="flex mb-[-8px]">
