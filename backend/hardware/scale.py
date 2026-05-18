@@ -1,11 +1,9 @@
 import json
 import os
-import time
 
 from config.pins import DOUT_PIN, PD_SCK_PIN, GAIN_CHANNEL_A
-from hx711 import HX711
-import RPi.GPIO as GPIO
 from core.logger import setup_logger
+from hardware import GPIO, HX711
 from hardware.setup import setup_gpio
 
 log = setup_logger()
@@ -29,6 +27,7 @@ def setup_scale():
     hx.zero(1)
     hx.set_scale_ratio(ratio)
 
+
 def tare():
     setup_scale()
     hx.zero(1)
@@ -44,6 +43,7 @@ def calibrate(known_weight):
     with open(config_path, 'w') as config_file:
         json.dump(config, config_file)
 
+
 def test_scale():
     setup_scale()
 
@@ -51,7 +51,9 @@ def test_scale():
         weight = hx.get_weight_mean(1)
         print(weight)
 
+
 import time
+
 
 def scale(target_weight, trailing, threshold=2, timeout=3) -> float:
     setup_scale()
@@ -80,14 +82,14 @@ def scale(target_weight, trailing, threshold=2, timeout=3) -> float:
             continue
 
         if current_weight < last_check_weight:
-            weight_error_count +=1
+            weight_error_count += 1
             log.debug("current_weight < last_weight")
             continue
 
         if current_weight - last_height_weight > threshold and height_weight_error >= 4:
             last_check_weight = last_height_weight
 
-        if (current_weight-last_check_weight) > 50:
+        if (current_weight - last_check_weight) > 50:
             height_weight_error += 1
             last_height_weight = current_weight
             log.debug("current weight to height")
@@ -102,7 +104,7 @@ def scale(target_weight, trailing, threshold=2, timeout=3) -> float:
             if (current_weight - last_check_weight) < threshold:
                 raise TimeoutError(f"Scale stalled: weight increased by less than {threshold}g in {timeout} seconds")
             last_check_time = time.time()
-        
+
         last_check_weight = current_weight
         weight = last_check_weight
 
@@ -111,6 +113,7 @@ def scale(target_weight, trailing, threshold=2, timeout=3) -> float:
 
 def scale_single() -> float:
     return hx.get_weight_mean(1)
+
 
 def wait_for_weight_increase(timeout: float = 3.0, threshold: float = 2.0, baseline: float | None = None,
                              poll_interval: float = 0.1) -> tuple[bool, float]:
@@ -146,6 +149,7 @@ def wait_for_weight_increase(timeout: float = 3.0, threshold: float = 2.0, basel
     except Exception:
         log.exception("Error in wait_for_weight_increase")
         return False, baseline or 0.0
+
 
 if __name__ == '__main__':
     setup_gpio()
