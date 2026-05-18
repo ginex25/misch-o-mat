@@ -52,9 +52,13 @@ fi
 
 if ! command -v python3 &> /dev/null; then
     log_error "python3 nicht gefunden – bitte installieren: sudo apt install python3"
-    MISSING=1
+    exit 1
 fi
 
+if ! command -v npm &> /dev/null; then
+    log_error "npm nicht gefunden. Bitte Node.js/npm installieren."
+    exit 1
+fi
 
 log_info "Projektverzeichnis : $PROJECT_ROOT"
 log_info "Frontend           : $FRONTEND_DIR"
@@ -62,36 +66,59 @@ log_info "Backend            : $BACKEND_DIR"
 log_info "start.sh           : $START_SH"
 log_info "Icon               : $ICON_PATH"
 log_info "Python             : $(python3 --version)"
-log_info "pip                : $(pip3 --version)"
+if command -v pip3 &> /dev/null; then
+    log_info "pip (system)       : $(pip3 --version)"
+else
+    log_info "pip (system)       : nicht im PATH (venv bringt eigenes pip)"
+fi
 log_info "npm                : $(npm --version)"
 
 
-
-# npm install im Frontend-Verzeichnis
-
 log_section "1/4 – dependencies install"
 
-if ! command -v npm &> /dev/null; then
-    log_error "npm nicht gefunden. Bitte Node.js/npm installieren."
-    exit 1
+# Systempakete für Kiosk-Start (start.sh): curl für Health-Check, Chromium für Anzeige
+if command -v apt-get &> /dev/null; then
+    log_info "Installiere Systempakete (curl, Chromium) per apt – sudo erforderlich …"
+    sudo apt-get update -qq
+    if ! sudo apt-get install -y curl; then
+        log_warn "Installation von curl fehlgeschlagen. start.sh benötigt curl zum Prüfen des Backends."
+    fi
+    if sudo apt-get install -y chromium; then
+        log_info "Paket 'chromium' installiert (empfohlen auf aktuellem Raspberry Pi OS)."
+    elif sudo apt-get install -y chromium-browser; then
+        log_info "Paket 'chromium-browser' installiert (ältere Pi-Images)."
+    else
+        log_warn "Chromium konnte nicht per apt installiert werden. Manuell: sudo apt install chromium"
+    fi
+else
+    log_warn "apt-get nicht gefunden (z. B. macOS) – curl/Chromium bitte selbst installieren; start.sh erwartet 'chromium' oder 'chromium-browser' im PATH."
 fi
 
+# npm install im Frontend-Verzeichnis
 log_info "Führe 'npm install' in $FRONTEND_DIR aus..."
 cd "$FRONTEND_DIR"
 npm install
 log_info "npm install erfolgreich abgeschlossen."
 
-# python venv
-log_info "Erstelle Python Virtual Environment in $VENV_DIR ..."
-python3 -m venv "$VENV_DIR"
-log_info "Virtual Environment erstellt."
+# python venv (nur anlegen, wenn noch nicht vorhanden oder unvollständig)
+if [ -d "$VENV_DIR" ] && [ -x "$VENV_DIR/bin/python" ]; then
+    log_info "Virtual Environment existiert bereits: $VENV_DIR"
+else
+    if [ -d "$VENV_DIR" ]; then
+        log_warn "Unvollständiges venv in $VENV_DIR – wird neu erstellt."
+        rm -rf "$VENV_DIR"
+    fi
+    log_info "Erstelle Python Virtual Environment in $VENV_DIR ..."
+    python3 -m venv "$VENV_DIR"
+    log_info "Virtual Environment erstellt."
+fi
 
 if [ ! -f "$BACKEND_DIR/requirements.txt" ]; then
     log_warn "requirements.txt nicht gefunden – pip install wird übersprungen."
 else
     log_info "Installiere Python-Abhängigkeiten in venv..."
-    "$VENV_DIR/bin/pip" install --upgrade pip
-    "$VENV_DIR/bin/pip" install -r "$BACKEND_DIR/requirements.txt"
+    "$VENV_DIR/bin/python3" -m pip install --upgrade pip
+    "$VENV_DIR/bin/python3" -m pip install -r "$BACKEND_DIR/requirements.txt"
     log_info "Python-Abhängigkeiten erfolgreich installiert."
 fi
 
