@@ -2,7 +2,7 @@ import time
 
 import config.pins as pins
 from core.logger import setup_logger
-from database.calibration import get_offset
+from database.calibration import get_connection_steps, get_hole, get_offset
 from hardware import GPIO
 
 HOME_OFFSET = 55
@@ -70,11 +70,14 @@ def home_stepper():
 
 def move_to_hole(start, target):
     try:
-        start_position = get_offset(start)
-        target_position = get_offset(target)
-        log.info(f"Moving from position {start} (offset: {target_position}) to {target} (offset: {target_position})...")
+        start_steps = get_connection_steps(start, STEPS_PER_HOLE)
+        target_steps = get_connection_steps(target, STEPS_PER_HOLE)
+        log.info(
+            f"Moving from connection {start} (hole {get_hole(start)}, offset {get_offset(start)} steps) "
+            f"to {target} (hole {get_hole(target)}, offset {get_offset(target)} steps)..."
+        )
 
-        target_steps = (target_position - start_position) * STEPS_PER_HOLE
+        target_steps = target_steps - start_steps
 
         if target_steps >= 0:
             GPIO.output(pins.DIR_PIN, GPIO.HIGH)

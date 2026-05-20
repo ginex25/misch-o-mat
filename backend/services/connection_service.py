@@ -2,6 +2,7 @@ import json
 import os
 
 from core.logger import setup_logger
+from database.calibration import get_offset, set_offset as save_offset
 
 log = setup_logger()
 
@@ -28,8 +29,6 @@ class ConnectionService:
         liquids = self._load("liquids.json")
         longdrinks = self._load("longdrinks.json")
         mixdrinks = self._load("mixdrinks.json")
-        calibration = self._load("calibration.json")
-
         cup_size = None
         if longdrinks:
             cup_size = next(iter(longdrinks.values()))["gesamtmenge_ml"]
@@ -50,11 +49,11 @@ class ConnectionService:
         connections = [
             {
                 "connection": pos,
-                "offset": calibration["connections"][str(pos)],
+                "offset": get_offset(pos),
                 **occupied.get(pos,
                                {"id": None, "liquid_name": None, "liquid_level": None, "name": None, "alkohol": None})
             }
-            for pos in map(int, calibration.get("connections", {}).keys())
+            for pos in range(1, 20)
         ]
 
         return {"cup_size": cup_size, "connections": connections}
@@ -101,7 +100,5 @@ class ConnectionService:
         )
 
     def set_offset(self, connection: int, offset: int) -> None:
-        calibration = self._load("calibration.json")
-        calibration["connections"][str(connection)] = offset
-        self._save("calibration.json", calibration)
+        save_offset(connection, offset)
         log.info(f"Set offset for connection {connection} to {offset} steps")
