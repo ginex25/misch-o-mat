@@ -17,7 +17,6 @@ START_SH="$SCRIPT_DIR/start.sh"
 VENV_DIR="$BACKEND_DIR/.venv"
 SERVICE_NAME="mischomat"
 SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
-DESKTOP_FILE="$HOME/Desktop/Mischomat.desktop"
 
 # Farben für Ausgabe
 GREEN='\033[0;32m'
@@ -29,6 +28,34 @@ log_info()    { echo -e "${GREEN}[INFO]${NC}  $1"; }
 log_warn()    { echo -e "${YELLOW}[WARN]${NC}  $1"; }
 log_error()   { echo -e "${RED}[ERROR]${NC} $1"; }
 log_section() { echo -e "\n${YELLOW}=== $1 ===${NC}"; }
+
+# Desktop, Alias und Kiosk laufen als normaler Benutzer (z. B. pi), nicht als root
+if [ "$(id -u)" -eq 0 ] && [ -z "${SUDO_USER:-}" ]; then
+    log_error "Bitte nicht als root starten. Als Benutzer pi: ./installer.sh"
+    log_error "(sudo wird nur für apt/systemd verwendet.)"
+    exit 1
+fi
+INSTALL_USER="${SUDO_USER:-$USER}"
+INSTALL_HOME="$(getent passwd "$INSTALL_USER" 2>/dev/null | cut -d: -f6)"
+[ -n "$INSTALL_HOME" ] || INSTALL_HOME="$HOME"
+DESKTOP_FILE="$INSTALL_HOME/Desktop/Mischomat.desktop"
+
+fix_ownership_if_needed() {
+    local path="$1"
+    [ -e "$path" ] || return 0
+    if [ -w "$path" ]; then
+        return 0
+    fi
+    log_warn "Keine Schreibrechte: $path – setze Besitzer auf $INSTALL_USER"
+    if [ "$(id -u)" -eq 0 ]; then
+        chown "$INSTALL_USER:$INSTALL_USER" "$path"
+    elif command -v sudo &>/dev/null; then
+        sudo chown "$INSTALL_USER:$INSTALL_USER" "$path"
+    else
+        log_error "Manuell: sudo chown $INSTALL_USER:$INSTALL_USER '$path'"
+        exit 1
+    fi
+}
 
 
 # Voraussetzungen prüfen
@@ -126,28 +153,39 @@ fi
 # Desktop-Verknüpfung erstellen
 log_section "2/4 – Desktop-Verknüpfung erstellen"
 
-# Desktop-Ordner anlegen falls nicht vorhanden
-mkdir -p "$HOME/Desktop"
+chmod +x "$START_SH"
 
-# Prüfe ob Icon vorhanden ist
-if [ ! -f "$ICON_PATH" ]; then
-    log_warn "Icon nicht gefunden: $ICON_PATH – Verknüpfung wird ohne Icon erstellt."
-    ICON_PATH=""
+# Desktop-Ordner anlegen (Pi: ~/Desktop)
+mkdir -p "$INSTALL_HOME/Desktop"
+fix_ownership_if_needed "$INSTALL_HOME/Desktop"
+fix_ownership_if_needed "$DESKTOP_FILE"
+
+USE_ICON=0
+if [ -f "$ICON_PATH" ]; then
+    USE_ICON=1
+else
+    log_warn "Icon nicht gefunden: $ICON_PATH – Verknüpfung ohne Icon-Zeile."
 fi
 
-cat > "$DESKTOP_FILE" << EOF
-[Desktop Entry]
-Version=1.0
-Type=Application
-Name=Mischomat
-Comment=Mischomat starten
-Exec=$START_SH
-Icon=$ICON_PATH
-Terminal=false
-Categories=Application;
-StartupNotify=false
-EOF
-
+TMP_DESKTOP="$(mktemp "${TMPDIR:-/tmp}/mischomat-desktop.XXXXXX")"
+{
+    echo "[Desktop Entry]"
+    echo "Version=1.0"
+    echo "Type=Application"
+    echo "Name=Mischomat"
+    echo "Comment=Mischomat starten"
+    echo "Exec=${START_SH}"
+    echo "Path=${SCRIPT_DIR}"
+    if [ "$USE_ICON" -eq 1 ]; then
+        echo "Icon=${ICON_PATH}"
+    fi
+    echo "Terminal=false"
+    echo "Categories=Utility;"
+} > "$TMP_DESKTOP"
+mv -f "$TMP_DESKTOP" "$DESKTOP_FILE"
+if [ "$(id -u)" -eq 0 ]; then
+    chown "$INSTALL_USER:$INSTALL_USER" "$DESKTOP_FILE"
+fi
 chmod +x "$DESKTOP_FILE"
 
 # Auf Raspberry Pi OS (LXDE) als vertrauenswürdig markieren
@@ -157,24 +195,65 @@ if command -v gio &> /dev/null; then
         || log_warn "gio set fehlgeschlagen – ggf. manuell als vertrauenswürdig markieren."
 fi
 
-log_info "Desktop-Verknüpfung erstellt: $DESKTOP_FILE"
+if command -v desktop-file-validate &> /dev/null; then
+    if desktop-file-validate "$DESKTOP_FILE" 2>&1; then
+        log_info "Desktop-Verknüpfung validiert: $DESKTOP_FILE"
+    else
+        log_warn "desktop-file-validate meldete Fehler – Datei ggf. manuell prüfen."
+    fi
+else
+    log_info "Desktop-Verknüpfung erstellt: $DESKTOP_FILE"
+fi
+
+
+# Shell-Alias mom → start.sh
+log_section "Shell-Alias 'mom' einrichten"
+
+MOM_MARKER="# Misch-O-Mat: mom → start.sh (von installer.sh)"
+MOM_ALIAS_LINE="alias mom='${START_SH}'"
+
+install_mom_alias_in() {
+    local rc_file="$1"
+    if [ -z "$rc_file" ]; then
+        return 0
+    fi
+    fix_ownership_if_needed "$rc_file"
+    if [ -f "$rc_file" ] && grep -qE '(^|[[:space:]])alias[[:space:]]+mom=' "$rc_file" 2>/dev/null; then
+        log_info "Alias 'mom' bereits in $rc_file – überspringe."
+        return 0
+    fi
+    {
+        echo ""
+        echo "$MOM_MARKER"
+        echo "$MOM_ALIAS_LINE"
+    } >> "$rc_file"
+    log_info "Alias 'mom' in $rc_file eingetragen."
+}
+
+# Raspberry Pi OS: Aliase in ~/.bash_aliases (wird von ~/.bashrc geladen)
+install_mom_alias_in "$INSTALL_HOME/.bash_aliases"
+log_info "Nach Installation: neues Terminal oder 'source ~/.bash_aliases', dann: mom"
 
 
 # Systemd Startup-Service erstellen
 log_section "3/4 – Systemd Startup-Service erstellen"
 
-# XAUTHORITY-Pfad für den aktuellen Benutzer ermitteln
-XAUTH_FILE="/home/${USER}/.Xauthority"
+# Grafik-Umgebung des installierenden Benutzers (nicht root – sonst kein Zugriff auf :0)
+XAUTH_FILE="${INSTALL_HOME}/.Xauthority"
+INSTALL_UID="$(id -u "$INSTALL_USER")"
+XDG_RUNTIME_DIR="/run/user/${INSTALL_UID}"
 
 sudo tee "$SERVICE_FILE" > /dev/null << EOF
 [Unit]
 Description=Mischomat Kiosk Service
-After=network-online.target graphical-session.target
-Wants=network-online.target
+# Kein network-online – Backend/Chromium laufen nur auf localhost
+After=graphical.target display-manager.service
+Wants=display-manager.service
 
 [Service]
 Type=simple
-User=${USER}
+User=${INSTALL_USER}
+Group=${INSTALL_USER}
 WorkingDirectory=${SCRIPT_DIR}
 ExecStart=${START_SH}
 Restart=on-failure
@@ -182,15 +261,18 @@ RestartSec=5
 
 Environment=DISPLAY=:0
 Environment=XAUTHORITY=${XAUTH_FILE}
+Environment=XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR}
+Environment=WAYLAND_DISPLAY=wayland-0
 
-ExecStartPre=/bin/sleep 5
+# Kurz warten, bis Autologin-Desktop (Wayland/X11) bereit ist
+ExecStartPre=/bin/sleep 10
 
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=mischomat
 
 [Install]
-WantedBy=graphical-session.target
+WantedBy=graphical.target
 EOF
 
 log_info "Service-Datei geschrieben: $SERVICE_FILE"
@@ -206,7 +288,6 @@ sudo systemctl status "${SERVICE_NAME}.service" --no-pager -l 2>/dev/null || tru
 # start.sh ausführbar machen und starten
 log_section "4/4 – Anwendung starten"
 
-chmod +x "$START_SH"
 log_info "start.sh ist ausführbar."
 
 log_info "Starte Mischomat jetzt..."

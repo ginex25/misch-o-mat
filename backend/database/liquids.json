@@ -29,7 +29,7 @@
     },
     "5": {
         "alkohol": false,
-        "anschlussplatz": 0,
+        "anschlussplatz": 3,
         "belegungswert": 0,
         "fuellstand_ml": 1550.0,
         "name": "Orangensaft"
@@ -113,7 +113,7 @@
     },
     "17": {
         "alkohol": false,
-        "anschlussplatz": 0,
+        "anschlussplatz": 4,
         "belegungswert": 0,
         "fuellstand_ml": 2000,
         "name": "Sprudelwasser"
@@ -162,7 +162,7 @@
     },
     "24": {
         "alkohol": true,
-        "anschlussplatz": 0,
+        "anschlussplatz": 12,
         "belegungswert": 1,
         "fuellstand_ml": 2000,
         "name": "Aperol"
@@ -190,7 +190,7 @@
     },
     "28": {
         "alkohol": true,
-        "anschlussplatz": 10,
+        "anschlussplatz": 11,
         "belegungswert": 1,
         "fuellstand_ml": 1397.8537767604687,
         "name": "Wodka"
@@ -204,17 +204,17 @@
     },
     "30": {
         "alkohol": true,
-        "anschlussplatz": 0,
+        "anschlussplatz": 10,
         "belegungswert": 1,
         "fuellstand_ml": 1775.0,
-        "name": "Wei\u00dfer Rum"
+        "name": "Rum (hell)"
     },
     "31": {
         "alkohol": true,
         "anschlussplatz": 0,
         "belegungswert": 1,
         "fuellstand_ml": 1625.0,
-        "name": "Dunkler Rum"
+        "name": "Rum (dunkel)"
     },
     "32": {
         "alkohol": true,
@@ -253,7 +253,7 @@
     },
     "37": {
         "alkohol": true,
-        "anschlussplatz": 0,
+        "anschlussplatz": 13,
         "belegungswert": 1,
         "fuellstand_ml": 2000,
         "name": "Sekt"

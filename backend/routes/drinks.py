@@ -2,12 +2,11 @@ import json
 import os
 from json import JSONDecodeError
 
-from flask import Blueprint, jsonify, request
-
 from actions.dispense import dispense_drink
 from core.logger import setup_logger
 from database import liquids as liquids_repo
 from database.drinks import DrinkCategory, get_by_name
+from flask import Blueprint, jsonify, request
 
 log = setup_logger()
 drinks_bp = Blueprint('drinks', __name__)
@@ -22,7 +21,7 @@ def preparation():
         return jsonify({"error": "Missing required parameters"}), 400
 
     drink_name = data['drink']
-    strength = data['strength']
+    strength = 'mittel'
 
     try:
         category = DrinkCategory(data['category'])
@@ -139,9 +138,8 @@ def _calculate_ingredient_amount(ing_id_str: str, percentage: float, drink_ml: f
     is_alcohol = liquids_data[ing_id_str].get('alkohol', False)
 
     if category == DrinkCategory.LONGDRINKS:
-        return percentage / 100 * drink_ml
+        return percentage / 100 * (drink_ml - 30)
 
-    log.debug(f"is_alcohol: {is_alcohol}")
     if not is_alcohol:
         if strength == "mittel":
             return (percentage + 5) / 100 * drink_ml
@@ -154,7 +152,6 @@ def _calculate_ingredient_amount(ing_id_str: str, percentage: float, drink_ml: f
             return (percentage - 10) / 100 * drink_ml
         elif strength == "mittel":
             te = (percentage - 5) / 100 * drink_ml
-            log.debug("TE: {te}")
             return te
         else:
             return percentage / 100 * drink_ml

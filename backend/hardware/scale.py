@@ -55,55 +55,69 @@ def test_scale():
 import time
 
 
-def scale(target_weight, trailing, threshold=2, timeout=3) -> float:
+def scale(target_weight, threshold=1, timeout=2) -> float:
     setup_scale()
     weight = 0
-    previous_weight = 0
-    max_increase = 100
     log.info(f"Starting scaling operation for target weight: {target_weight}g")
     false_count = 0
     weight_error_count = 0
-    height_weight_error = 0
-    last_height_weight = 0
+    weight_spike_count = 0
+    last_spike_weight = 0
 
     last_check_time = time.time()
+    weight_at_period_start = 0
     last_check_weight = 0
 
+    time.sleep(2)
+
     while weight < target_weight:
-        if false_count >= 5 or weight_error_count >= 5 or height_weight_error >= 5:
-            raise ValueError("Error: Scale returned an invalid or negative value.")
+        if false_count >= 5 or weight_error_count >= 5 or weight_spike_count >= 5:
+            if false_count >= 5:
+                reason, count = "returned an invalid or negative value", false_count
+            elif weight_error_count >= 5:
+                reason, count = "weight decreased during dispensing", weight_error_count
+            else:
+                reason, count = "weight increased too rapidly", weight_spike_count
+            raise ValueError(f"Error: Scale {reason}. Error Count: {count}")
 
         current_weight = hx.get_weight_mean(1)
-        log.debug(f"first cur weight: {current_weight}")
+        log.debug(f"weight: {current_weight}")
 
         if current_weight is False or (isinstance(current_weight, (int, float)) and current_weight < 0):
             false_count += 1
             log.debug("FEHLER (Ungültiger oder negativer Wert)")
+            last_check_time = time.time()
+            weight_at_period_start = last_check_weight
             continue
 
         if current_weight < last_check_weight:
             weight_error_count += 1
             log.debug("current_weight < last_weight")
+            last_check_time = time.time()
+            weight_at_period_start = last_check_weight
             continue
 
-        if current_weight - last_height_weight > threshold and height_weight_error >= 4:
-            last_check_weight = last_height_weight
+        if current_weight - last_spike_weight > threshold and weight_spike_count >= 4:
+            last_check_weight = last_spike_weight
 
         if (current_weight - last_check_weight) > 50:
-            height_weight_error += 1
-            last_height_weight = current_weight
-            log.debug("current weight to height")
+            weight_spike_count += 1
+            last_spike_weight = current_weight
+            log.debug("weight spike detected")
+            last_check_time = time.time()
+            weight_at_period_start = current_weight
             continue
 
         false_count = 0
         weight_error_count = 0
-        height_weight_error = 0
+        weight_spike_count = 0
 
         elapsed_since_check = time.time() - last_check_time
         if elapsed_since_check >= timeout:
-            if (current_weight - last_check_weight) < threshold:
+            if (current_weight - weight_at_period_start) < threshold:
                 raise TimeoutError(f"Scale stalled: weight increased by less than {threshold}g in {timeout} seconds")
             last_check_time = time.time()
+            weight_at_period_start = current_weight
 
         last_check_weight = current_weight
         weight = last_check_weight

@@ -23,6 +23,54 @@ fi
 
 echo "[$(date)] Python (venv): $($PYTHON --version)" | tee -a "$LOG_FILE"
 
+# XDG_RUNTIME_DIR / Wayland für Pi OS Bookworm+ (labwc) – oft nicht gesetzt bei systemd/SSH
+setup_graphics_env() {
+    local uid
+    uid="$(id -u)"
+    if [ -z "${XDG_RUNTIME_DIR:-}" ] && [ -d "/run/user/${uid}" ]; then
+        export XDG_RUNTIME_DIR="/run/user/${uid}"
+    fi
+    if [ -z "${WAYLAND_DISPLAY:-}" ] && [ -n "${XDG_RUNTIME_DIR:-}" ]; then
+        local sock
+        for sock in "${XDG_RUNTIME_DIR}"/wayland-*; do
+            if [ -S "$sock" ]; then
+                export WAYLAND_DISPLAY="${sock##*/}"
+                break
+            fi
+        done
+    fi
+    if [ -z "${DISPLAY:-}" ] && [ -z "${WAYLAND_DISPLAY:-}" ]; then
+        export DISPLAY=:0
+    fi
+}
+
+# Grafik verfügbar? (SSH ohne Session / Headless → kein Chromium)
+has_display() {
+    setup_graphics_env
+    if [ -n "${WAYLAND_DISPLAY:-}" ] && [ -n "${XDG_RUNTIME_DIR:-}" ] \
+        && [ -S "${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY}" ]; then
+        return 0
+    fi
+    if [ -n "${DISPLAY:-}" ]; then
+        if command -v xdpyinfo >/dev/null 2>&1; then
+            xdpyinfo -display "$DISPLAY" >/dev/null 2>&1 && return 0
+        else
+            return 0
+        fi
+    fi
+    return 1
+}
+
+# Chromium-Flags je nach Wayland (Pi OS Bookworm+) oder X11
+chromium_graphics_flags() {
+    setup_graphics_env
+    if [ -n "${WAYLAND_DISPLAY:-}" ] && [ -S "${XDG_RUNTIME_DIR:-/nonexistent}/${WAYLAND_DISPLAY}" ]; then
+        echo --ozone-platform=wayland --start-maximized
+    else
+        echo --ozone-platform=x11 --use-gl=egl
+    fi
+}
+
 BACKEND_URL="http://localhost:5000"
 BACKEND_PID=""
 STARTED_BACKEND=0
@@ -32,7 +80,7 @@ if curl -s --head "$BACKEND_URL" > /dev/null 2>&1; then
     echo "[$(date)] Backend läuft bereits ($BACKEND_URL). Überspringe Start, öffne nur Browser." | tee -a "$LOG_FILE"
 else
     echo "[$(date)] Starte Backend (server.py) mit ENV=production..." | tee -a "$LOG_FILE"
-    ENV=production "$PYTHON" "$BACKEND_DIR/server.py" >> "$LOG_FILE" 2>&1 &
+    (cd "$BACKEND_DIR" && ENV=production "$PYTHON" server.py) >> "$LOG_FILE" 2>&1 &
     BACKEND_PID=$!
     STARTED_BACKEND=1
     echo "[$(date)] Backend PID: $BACKEND_PID" | tee -a "$LOG_FILE"
@@ -52,6 +100,13 @@ else
     echo "[$(date)] Backend ist bereit (nach ${WAITED}s)." | tee -a "$LOG_FILE"
 fi
 
+if ! has_display; then
+    echo "[$(date)] Kein grafisches Display (z. B. SSH ohne X11, DISPLAY nicht gesetzt)." | tee -a "$LOG_FILE"
+    echo "[$(date)] Browser wird übersprungen – Backend läuft weiter unter $BACKEND_URL" | tee -a "$LOG_FILE"
+    echo "[$(date)] UI am Pi: start.sh am Desktop/Kiosk ausführen oder systemctl start mischomat." | tee -a "$LOG_FILE"
+    exit 0
+fi
+
 # Chromium: auf Raspberry Pi OS oft "chromium", ältere Images "chromium-browser"
 if command -v chromium >/dev/null 2>&1; then
     CHROMIUM_BIN=chromium
@@ -62,14 +117,21 @@ else
     exit 1
 fi
 
-echo "[$(date)] Starte Browser ($CHROMIUM_BIN)..." | tee -a "$LOG_FILE"
+GRAPHICS_FLAGS=($(chromium_graphics_flags))
+echo "[$(date)] Starte Browser ($CHROMIUM_BIN, ${GRAPHICS_FLAGS[*]})..." | tee -a "$LOG_FILE"
 
 "$CHROMIUM_BIN" \
     --kiosk \
     --touch-events=enabled \
-    --disable-features=BackForwardCache,OverscrollHistoryNavigation,ScrollAnchoring \
+    --no-first-run \
+    --password-store=basic \
+    --check-for-update-interval=31536000 \
+    --disable-pinch \
+    --overscroll-history-navigation=0 \
+    --disable-features=BackForwardCache,OverscrollHistoryNavigation,ScrollAnchoring,Translate \
     --noerrdialogs \
     --disable-infobars \
+    "${GRAPHICS_FLAGS[@]}" \
     "$BACKEND_URL" >> "$LOG_FILE" 2>&1
 
 if [ "$STARTED_BACKEND" -eq 1 ]; then

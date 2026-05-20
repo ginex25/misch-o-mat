@@ -50,9 +50,9 @@
   "5": {
     "name": "Aperol Spritz",
     "zutaten": {
-      "24": 33,
+      "24": 20,
       "37": 50,
-      "17": 17
+      "17": 30
     },
     "gesamtmenge_ml": 250.0,
     "url": "longdrinks/aperol_spritz.jpg"

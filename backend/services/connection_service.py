@@ -85,6 +85,10 @@ class ConnectionService:
         if liquid_fill is not None and not isinstance(liquid_fill, (int, float)):
             raise TypeError("liquid_fill must be a number")
 
+        for lid, info in liquids.items():
+            if info.get("anschlussplatz") == connection:
+                info["anschlussplatz"] = 0
+
         liquids[key]["anschlussplatz"] = connection
 
         if liquid_fill is not None:

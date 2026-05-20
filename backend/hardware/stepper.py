@@ -9,8 +9,9 @@ HOME_OFFSET = 55
 STEPS_PER_REVOLUTION = 3200
 STEPS_PER_HOLE = 160  # 3200/360 = 8,89 Schritte pro Grad /// 360/20 = 18 Grad pro Loch /// 18 * 8,89 = 160
 
-MIN_DELAY = 0.0008
+MIN_DELAY = 0.0006
 MAX_DELAY = 0.004
+HOME_DELAY = 0.001
 RAMP_STEPS = 200
 
 log = setup_logger()
@@ -25,18 +26,25 @@ def _step(delay: float):
 
 
 def _compute_ramp(total_steps: int) -> list[float]:
-    ramp = min(RAMP_STEPS, total_steps // 2)
-    delays = []
+    if total_steps <= 0:
+        return []
 
+    ramp = min(RAMP_STEPS, total_steps // 4)
+    if ramp < 1:
+        ramp = 1
+    if 2 * ramp > total_steps:
+        ramp = max(1, total_steps // 2)
+
+    delays = []
     for i in range(total_steps):
         if i < ramp:
             # speed up
             t = i / ramp
-            delay = MAX_DELAY + (MIN_DELAY - MIN_DELAY) * t
+            delay = MAX_DELAY + (MIN_DELAY - MAX_DELAY) * t
         elif i >= total_steps - ramp:
             # slow down
             t = (total_steps - i) / ramp
-            delay = MAX_DELAY + (MIN_DELAY - MIN_DELAY) * t
+            delay = MAX_DELAY + (MIN_DELAY - MAX_DELAY) * t
         else:
             # hold
             delay = MIN_DELAY
@@ -50,12 +58,12 @@ def home_stepper():
         log.info("Homing stepper...")
         GPIO.output(pins.DIR_PIN, GPIO.LOW)
         while GPIO.input(pins.ENDSTOP_PIN) == GPIO.HIGH:
-            _step(MAX_DELAY)
+            _step(HOME_DELAY)
 
         GPIO.output(pins.DIR_PIN, GPIO.HIGH)
 
         for i in range(HOME_OFFSET):
-            _step(MAX_DELAY)
+            _step(HOME_DELAY)
     except Exception:
         log.exception("Error during homing")
 

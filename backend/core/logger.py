@@ -30,7 +30,7 @@ def setup_logger(name: str = "app") -> logging.Logger:
     file_handler = RotatingFileHandler(
         LOG_FILE, maxBytes=5 * 1024 * 1024, backupCount=3, encoding="utf-8"
     )
-    file_handler.setLevel(logging.WARNING)
+    file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(formatter)
 
     logger.addHandler(console_handler)

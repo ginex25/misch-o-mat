@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import {useSnackbar} from "./Snackbar.jsx";
 
 function Hero() {
@@ -17,9 +19,23 @@ function Hero() {
 
   const scrollDivRef = useRef(null);
   const { showError } = useSnackbar();
+  const chevronStyle = { fontSize: 44 };
 
   const toggleRandom = useCallback(() => {
     setRandom((prevRandom) => !prevRandom);
+  }, []);
+
+  const scrollDrinks = useCallback((direction) => {
+    const container = scrollDivRef.current;
+    if (!container) return;
+
+    const firstItem = container.querySelector(".inline-flex > div");
+    const scrollAmount = firstItem ? firstItem.offsetWidth + 12 : 200;
+
+    container.scrollBy({
+      left: direction === "left" ? -scrollAmount : scrollAmount,
+      behavior: "smooth",
+    });
   }, []);
 
   const changeCategory = (category) => {
@@ -135,7 +151,24 @@ function Hero() {
         </div>
       </div>
       <div className="w-full grid grid-cols-2 mt-2">
-        <div></div>
+        <div className="flex items-end gap-4 py-1 mb-[4px] ml-2">
+          <button
+            type="button"
+            onClick={() => scrollDrinks("left")}
+            className="flex h-16 w-28 shrink-0 items-center justify-center rounded-full border-2 border-[#366356] text-[#1fe0a6] active:scale-95 transition-all duration-100"
+            aria-label="Getränke nach links"
+          >
+            <ChevronLeftIcon sx={chevronStyle} />
+          </button>
+          <button
+            type="button"
+            onClick={() => scrollDrinks("right")}
+            className="flex h-16 w-28 shrink-0 items-center justify-center rounded-full border-2 border-[#366356] text-[#1fe0a6] active:scale-95 transition-all duration-100"
+            aria-label="Getränke nach rechts"
+          >
+            <ChevronRightIcon sx={chevronStyle} />
+          </button>
+        </div>
         <div className="py-1 mt-auto ml-auto mb-[4px] mr-2">
           <div className="flex flex-row items-end justify-end">
             <div className="flex mb-[-8px]">

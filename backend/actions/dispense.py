@@ -1,6 +1,5 @@
 import json
 import os
-import time
 from typing import Dict
 
 from actions.reset import reset
@@ -37,7 +36,7 @@ def dispense_drink(ingredients: Dict[str, float]) -> Dict[str, float]:
             drive_up()
 
             pump_on()
-            actual = scale(amount, trailing=False)
+            actual = scale(amount)
             pump_off()
 
             dispense_amounts[ingredient_id] = actual
