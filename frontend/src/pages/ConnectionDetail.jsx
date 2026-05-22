@@ -1,6 +1,6 @@
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import {useLocation, useNavigate, useOutletContext, useParams} from "react-router-dom";
-import React, {useEffect, useMemo, useState} from "react";
+import React, {useEffect, useMemo, useRef, useState} from "react";
 import {useSnackbar} from "../components/Snackbar.jsx";
 import axios from "axios";
 import {parseLiquids} from "../models/Liquid.js";
@@ -70,17 +70,26 @@ export default function ConnectionDetailPage() {
     const fillOptions = React.useMemo(() => {
         const base = Array.from(
             {length: 2000 / 50 + 1},
-            (_, i) => i * 50
+            (_, i) => (2000 / 50 - i) * 50
         );
 
         const current = form.fill;
 
         if (current != null && !base.includes(current)) {
-            return [...base, current].sort((a, b) => a - b);
+            return [...base, current].sort((a, b) => b - a);
         }
 
         return base;
     }, [form.fill]);
+
+    const [fillOpen, setFillOpen] = useState(false);
+    const fillListRef = useRef(null);
+
+    useEffect(() => {
+        if (fillOpen) {
+            fillListRef.current?.scrollTo(0, 0);
+        }
+    }, [fillOpen]);
 
     const statusLabels = {
         [Status.MOVING]: "Position wird angefahren...",
@@ -186,8 +195,6 @@ export default function ConnectionDetailPage() {
         const originalLiquidIdStr = connection.liquid?.id != null
             ? String(connection.liquid.id)
             : null;
-        const formLiquidStr =
-            form.liquid && form.liquid !== "0" ? String(form.liquid) : null;
         const originalFill = connection.liquid?.fill ?? 0;
 
         const liquidChanged = formLiquidStr !== originalLiquidIdStr;
@@ -198,7 +205,7 @@ export default function ConnectionDetailPage() {
         const body = {};
 
         if (liquidChanged) {
-            body.liquid_id = formLiquidStr;
+            body.liquid_id = String(form.liquid);
         }
 
         if (fillChanged) {
@@ -292,20 +299,50 @@ export default function ConnectionDetailPage() {
                 </label>
 
                 <div className="relative">
-                    <select
-                        value={form.fill}
-                        onChange={(e) =>
-                            setForm(prev => ({
-                                ...prev,
-                                fill: Number(e.target.value)
-                            }))
-                        }
-                        className="w-full appearance-none bg-[#2a3d38] text-white py-3 px-4 rounded-2xl text-lg focus:outline-none"
+                    <button
+                        type="button"
+                        onClick={() => setFillOpen((open) => !open)}
+                        className="w-full text-left bg-[#2a3d38] text-white py-3 px-4 rounded-2xl text-lg focus:outline-none"
                     >
-                        {fillOptions.map((value) => (<option key={value} value={value}>
-                            {value} ml
-                        </option>))}
-                    </select>
+                        {form.fill} ml
+                    </button>
+
+                    {fillOpen && (
+                        <>
+                            <button
+                                type="button"
+                                aria-label="Füllstand schließen"
+                                className="fixed inset-0 z-10"
+                                onClick={() => setFillOpen(false)}
+                            />
+                            <ul
+                                ref={fillListRef}
+                                className="absolute z-20 mt-1 w-full max-h-60 overflow-y-auto rounded-2xl bg-[#2a3d38] shadow-lg"
+                            >
+                                {fillOptions.map((value) => (
+                                    <li key={value}>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setForm((prev) => ({
+                                                    ...prev,
+                                                    fill: value,
+                                                }));
+                                                setFillOpen(false);
+                                            }}
+                                            className={`w-full px-4 py-3 text-left text-lg text-white hover:bg-[#354f48] ${
+                                                value === form.fill
+                                                    ? "bg-[#354f48]"
+                                                    : ""
+                                            }`}
+                                        >
+                                            {value} ml
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        </>
+                    )}
 
                     <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#8ca3af]">
                         ▼
