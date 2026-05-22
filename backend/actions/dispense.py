@@ -2,7 +2,6 @@ import json
 import os
 from typing import Dict
 
-from actions.reset import reset
 from core.logger import setup_logger
 from hardware.bridge import drive_up, drive_away
 from hardware.pump import pump_off, pump_on
@@ -27,29 +26,26 @@ def dispense_drink(ingredients: Dict[str, float]) -> Dict[str, float]:
 
     dispense_amounts = {}
 
-    try:
-        for ingredient_id, amount in ingredients.items():
-            target_position = liquids_data[ingredient_id]["anschlussplatz"]
+    for ingredient_id, amount in ingredients.items():
+        target_position = liquids_data[ingredient_id]["anschlussplatz"]
 
-            tare()
-            move_to_hole(start_position, target_position)
-            drive_up()
+        tare()
+        move_to_hole(start_position, target_position)
+        drive_up()
 
-            pump_on()
-            actual = scale(amount)
+        pump_on()
+        try:
+            scale(amount)
+        except Exception:
+            log.exception(f"Error during scale {ingredient_id}")
+        finally:
             pump_off()
-
-            dispense_amounts[ingredient_id] = actual
-
             drive_away()
-
             last_weight = scale_single()
             log.debug(f"last_weight: {last_weight}")
-            start_position = target_position
-    except Exception as e:
-        log.exception("Error during dispensing")
-        reset()
-        raise e
+
+        dispense_amounts[ingredient_id] = last_weight
+        start_position = target_position
 
     home_stepper()
     log.info("Dispensing finished")

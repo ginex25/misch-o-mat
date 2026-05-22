@@ -3,6 +3,7 @@ import os
 from json import JSONDecodeError
 
 from actions.dispense import dispense_drink
+from actions.reset import reset
 from core.logger import setup_logger
 from database import liquids as liquids_repo
 from database.drinks import DrinkCategory, get_by_name
@@ -52,6 +53,7 @@ def preparation():
         try:
             actual_amounts = dispense_drink(ingredients)
         except Exception as e:
+            reset()
             return jsonify({"error": f"Dispensing failed: {str(e)}"}), 500
 
         for ingredient_id, amount in actual_amounts.items():
